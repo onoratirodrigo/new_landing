@@ -1,0 +1,29 @@
+---
+import { site } from "../data/site";
+
+interface Props {
+  variant?: "light" | "dark"; // "dark" = magenta (sobre fondo claro); "light" = blanco (sobre fondo oscuro)
+  class?: string;
+}
+
+const { variant = "dark", class: className = "" } = Astro.props;
+
+// Usamos el logo oficial como máscara y aplicamos el color via background-color.
+// De esta forma podemos teñirlo en magenta (sobre claro) o blanco (sobre oscuro)
+// sin necesidad de editar el PNG.
+const color = variant === "light" ? "#FFFFFF" : "rgb(var(--brand-500))";
+const maskCss = `-webkit-mask: url('${site.logoUrl}') center/contain no-repeat; mask: url('${site.logoUrl}') center/contain no-repeat; background-color: ${color};`;
+---
+
+<a
+  href="/"
+  aria-label="Etman — Inicio"
+  class={`inline-flex items-center ${className}`}
+>
+  <span
+    role="img"
+    aria-label="Etman"
+    class="block h-10 md:h-12 w-[110px] md:w-[130px]"
+    style={maskCss}
+  ></span>
+</a>

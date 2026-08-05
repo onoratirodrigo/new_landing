@@ -1,0 +1,28 @@
+---
+import { stats } from "../data/stats";
+import StatCounter from "./StatCounter.tsx";
+---
+
+<section class="bg-white border-y border-ink-100">
+  <div class="container-x py-14 md:py-16">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+      {
+        stats.map((s, i) => (
+          <div class="text-center md:text-left">
+            <div class="font-display font-extrabold text-brand-500 leading-none text-4xl md:text-5xl tracking-tighter2">
+              <StatCounter
+                client:load
+                value={s.value}
+                delay={i * 220}
+              />
+              {s.suffix && (
+                <span class="text-ink-900">{s.suffix}</span>
+              )}
+            </div>
+            <div class="mt-2 text-sm md:text-base text-ink-500">{s.label}</div>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

@@ -1,0 +1,89 @@
+---
+import "../styles/global.css";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { site } from "../data/site";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = `${site.name} — ${site.tagline}`,
+  description = "Etman es la distribuidora mayorista de autopartes con mayor cobertura nacional de Argentina. Más de 65 años de trayectoria al servicio del Aftermarket.",
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#E91E63" />
+    <link rel="icon" type="image/png" href="/images/favicon-etman.png" />
+    <link rel="apple-touch-icon" href="/images/favicon-etman.png" />
+    <link rel="shortcut icon" href="/images/favicon-etman.png" />
+    <title>{title}</title>
+    <script is:inline>
+      // Aplicar "Modo Clásico" (si estaba guardado) antes del primer paint,
+      // para evitar el flash de magenta -> bordeaux al cargar la página.
+      (function () {
+        try {
+          var isClasico = localStorage.getItem("modoClasico") === "true";
+          if (isClasico) {
+            document.documentElement.classList.add("modo-clasico");
+          }
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", isClasico ? "#72112B" : "#E91E63");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-white text-ink-900 antialiased">
+    <a
+      href="#contenido"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:bg-white focus:text-brand-600 focus:px-4 focus:py-2 focus:rounded-full focus:shadow"
+    >
+      Saltar al contenido
+    </a>
+
+    <Header />
+
+    <main id="contenido">
+      <slot />
+    </main>
+
+    <Footer />
+
+    <script>
+      // Botones magnéticos: en desktop (mouse fino) y sin preferencia de
+      // reducir movimiento, los botones ".btn" siguen levemente al cursor
+      // cuando se acercan, y vuelven a su lugar al alejarse.
+      const prefersReducedMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+      const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
+
+      if (!prefersReducedMotion && hasFinePointer) {
+        const STRENGTH = 0.35;
+        const MAX_OFFSET = 10;
+
+        document.querySelectorAll<HTMLElement>(".btn").forEach((btn) => {
+          btn.addEventListener("mousemove", (e) => {
+            const rect = btn.getBoundingClientRect();
+            const dx = e.clientX - (rect.left + rect.width / 2);
+            const dy = e.clientY - (rect.top + rect.height / 2);
+            const offsetX = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, dx * STRENGTH));
+            const offsetY = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, dy * STRENGTH));
+            btn.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+          });
+          btn.addEventListener("mouseleave", () => {
+            btn.style.transform = "";
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

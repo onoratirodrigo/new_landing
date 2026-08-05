@@ -1,0 +1,33 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+}
+
+const { title = "Portal de clientes | Etman" } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="icon" type="image/png" href="/images/favicon-etman.png" />
+    <title>{title}</title>
+    <script is:inline>
+      // Mantiene la preferencia de "Modo Clásico" elegida en el sitio principal.
+      (function () {
+        try {
+          if (localStorage.getItem("modoClasico") === "true") {
+            document.documentElement.classList.add("modo-clasico");
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-ink-50 text-ink-900 antialiased">
+    <slot />
+  </body>
+</html>

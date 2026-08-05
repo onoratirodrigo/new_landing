@@ -1,0 +1,612 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap");
+
+/* =========================================================
+   Tokens base (CSS variables)
+   ========================================================= */
+:root {
+  /* Paleta de marca como tripletes RGB (sin "#" ni comas) para poder usarlas
+     tanto en color sólido -- rgb(var(--brand-500)) -- como con opacidad
+     -- rgb(var(--brand-500) / 0.4) --. "Modo Clásico" pisa estos valores
+     (ver .modo-clasico más abajo) para pasar de magenta a bordeaux en todo
+     el sitio sin tocar ninguna clase de Tailwind. */
+  --brand-50: 255 241 246;
+  --brand-100: 254 224 236;
+  --brand-200: 252 192 216;
+  --brand-300: 248 139 181;
+  --brand-400: 242 80 144;
+  --brand-500: 233 30 99;
+  --brand-600: 216 27 96;
+  --brand-700: 176 18 74;
+  --brand-800: 131 16 56;
+  --brand-900: 90 10 38;
+  --ink-900: #0e0e0f;
+  --ink-700: #272729;
+  --ink-500: #55555c;
+  --ink-300: #b1b1b8;
+  --ink-100: #ededef;
+  --surface: #ffffff;
+  --surface-muted: #f7f7f8;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+
+  --shadow-soft: 0 1px 2px rgba(14, 14, 15, 0.04),
+    0 8px 24px -12px rgba(14, 14, 15, 0.08);
+
+  --container: min(88rem, 92vw);
+}
+
+/* "Modo Clásico": paleta bordeaux (ancla exacta en brand-500 = #72112B) en
+   vez de la magenta por defecto. Se activa agregando esta clase al <html>
+   (ver toggle en Header.astro). */
+html.modo-clasico {
+  --brand-50: 252 233 238;
+  --brand-100: 248 211 221;
+  --brand-200: 242 166 186;
+  --brand-300: 233 109 142;
+  --brand-400: 223 42 90;
+  --brand-500: 114 17 43;
+  --brand-600: 98 15 37;
+  --brand-700: 71 11 27;
+  --brand-800: 44 7 17;
+  --brand-900: 27 4 10;
+}
+
+/* =========================================================
+   Resets / base
+   ========================================================= */
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: theme("fontFamily.sans");
+  color: var(--ink-900);
+  background: var(--surface);
+}
+
+::selection {
+  background: rgb(var(--brand-500));
+  color: #fff;
+}
+
+/* =========================================================
+   Utilidades reusables
+   ========================================================= */
+.container-x {
+  width: var(--container);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.eyebrow {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(var(--brand-600));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+.section-title {
+  font-family: theme("fontFamily.display");
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--ink-900);
+  font-size: clamp(1.9rem, 3vw, 2.75rem);
+  line-height: 1.05;
+}
+
+.lead {
+  color: var(--ink-500);
+  font-size: 1.05rem;
+  line-height: 1.65;
+  max-width: 60ch;
+}
+
+/* =========================================================
+   Botones
+   ========================================================= */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.92rem;
+  transition: transform 0.15s ease, background-color 0.2s ease,
+    color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  background: rgb(var(--brand-500));
+  color: #fff;
+}
+.btn-primary:hover {
+  background: rgb(var(--brand-600));
+  box-shadow: 0 10px 30px -10px rgb(var(--brand-600) / 0.55);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-900);
+  border-color: rgba(14, 14, 15, 0.16);
+}
+.btn-ghost:hover {
+  border-color: rgb(var(--brand-500));
+  color: rgb(var(--brand-600));
+}
+
+.btn-light {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(6px);
+}
+.btn-light:hover {
+  background: #fff;
+  color: rgb(var(--brand-600));
+  border-color: #fff;
+}
+
+/* =========================================================
+   Cards
+   ========================================================= */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--ink-100);
+  border-radius: var(--radius-lg);
+  transition: transform 0.25s ease, box-shadow 0.25s ease,
+    border-color 0.25s ease;
+}
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-soft);
+  border-color: rgb(var(--brand-600) / 0.25);
+}
+
+/* Marquee de logos */
+.marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 6%,
+    #000 94%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 6%,
+    #000 94%,
+    transparent
+  );
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  /* Definimos el keyframe localmente para no depender de Tailwind
+     (que lo tree-shakea si no se usa la utility animate-marquee). */
+  animation: marquee-scroll 55s linear infinite;
+  will-change: transform;
+}
+.marquee:hover .marquee-track {
+  animation-play-state: paused;
+}
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+/* Scroll target offset para anclas con header sticky */
+section[id] {
+  scroll-margin-top: 5.5rem;
+}
+
+/* =========================================================
+   Header transparente → opaco al scrollear
+   ========================================================= */
+.site-header {
+  --logo-color: #ffffff;
+  --hdr-text: rgba(255, 255, 255, 0.92);
+  --hdr-text-hover: #ffffff;
+  --hdr-bg-hover: rgba(255, 255, 255, 0.12);
+  --hdr-border: rgba(255, 255, 255, 0.35);
+
+  background-color: transparent;
+  border-bottom: 1px solid transparent;
+  -webkit-backdrop-filter: blur(0);
+  backdrop-filter: blur(0);
+  transition: background-color 300ms ease, border-color 300ms ease,
+    backdrop-filter 300ms ease, -webkit-backdrop-filter 300ms ease;
+}
+
+.site-header.is-scrolled {
+  --logo-color: rgb(var(--brand-500));
+  --hdr-text: #272729;
+  --hdr-text-hover: rgb(var(--brand-600));
+  --hdr-bg-hover: rgb(var(--brand-50));
+  --hdr-border: rgba(14, 14, 15, 0.16);
+
+  background-color: rgba(255, 255, 255, 0.9);
+  border-bottom-color: rgba(14, 14, 15, 0.06);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+}
+
+/* Logo (mask coloreable según estado del header) */
+.logo-mark {
+  -webkit-mask: url("/images/logo-etman.png") center / contain no-repeat;
+  mask: url("/images/logo-etman.png") center / contain no-repeat;
+  background-color: var(--logo-color);
+  transition: background-color 300ms ease;
+}
+
+/* Links del header (texto + hover) */
+.site-header .header-link {
+  color: var(--hdr-text);
+  transition: color 300ms ease, background-color 300ms ease;
+}
+.site-header .header-link:hover {
+  color: var(--hdr-text-hover);
+  background-color: var(--hdr-bg-hover);
+}
+
+/* Botón hamburguesa */
+.site-header .header-toggle {
+  color: var(--hdr-text);
+  border-color: var(--hdr-border);
+  transition: color 300ms ease, border-color 300ms ease,
+    background-color 300ms ease;
+}
+.site-header .header-toggle:hover {
+  color: var(--hdr-text-hover);
+  border-color: var(--hdr-text-hover);
+}
+
+/* =========================================================
+   Banda magenta decorativa del hero (figura geométrica)
+   ========================================================= */
+.hero-stripe {
+  position: absolute;
+  pointer-events: none;
+  bottom: 0;
+  right: 0;
+  width: min(82vw, 1300px);
+  height: clamp(56px, 7vw, 96px);
+  /* Gradient: oscuro a la izquierda → se va aclarando hacia la derecha hasta desaparecer */
+  background: linear-gradient(
+    to right,
+    rgb(var(--brand-800)) 0%,
+    rgb(var(--brand-700)) 14%,
+    rgb(var(--brand-500)) 34%,
+    rgb(var(--brand-400)) 58%,
+    rgb(var(--brand-300) / 0.45) 82%,
+    rgb(var(--brand-200) / 0) 100%
+  );
+  /* Parallelograma: cuña diagonal a la izquierda */
+  clip-path: polygon(
+    clamp(48px, 8vw, 120px) 0,
+    100% 0,
+    100% 100%,
+    0 100%
+  );
+  -webkit-clip-path: polygon(
+    clamp(48px, 8vw, 120px) 0,
+    100% 0,
+    100% 100%,
+    0 100%
+  );
+  transform: translateY(2px);
+}
+
+/* Banda secundaria más fina para darle profundidad */
+.hero-stripe::after {
+  content: "";
+  position: absolute;
+  inset: -22px 0 auto auto;
+  width: 65%;
+  height: 6px;
+  background: linear-gradient(
+    to right,
+    rgb(var(--brand-700) / 0),
+    rgb(var(--brand-500)) 50%,
+    rgb(var(--brand-500) / 0) 100%
+  );
+  border-radius: 999px;
+  opacity: 0.85;
+}
+
+/* =========================================================
+   Flip cards (categorías de productos)
+   ========================================================= */
+.flip-card {
+  perspective: 1400px;
+}
+.flip-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 750ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.flip-card:hover .flip-card-inner,
+.flip-card:focus-within .flip-card-inner {
+  transform: rotateY(180deg);
+}
+.flip-card-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-card-inner {
+    transition: none;
+  }
+}
+
+/* =========================================================
+   Contador tipo odómetro (Stats)
+   ========================================================= */
+.stat-counter {
+  display: inline-flex;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+/* Micro-bounce al aterrizar el último dígito */
+.stat-counter.is-landed {
+  animation: stat-counter-land 480ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes stat-counter-land {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.13);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Cada slot es un "ventanuco" con overflow hidden por dónde asoma la tira */
+.stat-counter-slot {
+  display: inline-block;
+  height: 1em;
+  overflow: hidden;
+  vertical-align: baseline;
+  line-height: 1;
+}
+
+/* Tira vertical con 30 dígitos (0-9 repetido CYCLES veces).
+   El componente controla el translateY inline. */
+.stat-counter-strip {
+  display: block;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.62, 0.02, 0.32, 1);
+  will-change: transform;
+}
+
+.stat-counter-digit {
+  display: block;
+  line-height: 1;
+  height: 1em;
+}
+
+.stat-counter-sep {
+  display: inline-block;
+  vertical-align: baseline;
+  line-height: 1;
+}
+
+/* Reducir animaciones si el usuario tiene la preferencia */
+@media (prefers-reduced-motion: reduce) {
+  .stat-counter-strip {
+    transition: none !important;
+  }
+  .stat-counter.is-landed {
+    animation: none !important;
+  }
+}
+
+/* =========================================================
+   Animaciones del explorador de sucursales
+   ========================================================= */
+
+/* Reveal circular desde el punto donde está la card hovereada.
+   El origin se inyecta en runtime via custom properties (--reveal-x / --reveal-y).
+   Animamos con `forwards` durante el reveal y al terminar el componente quita
+   la clase, así el contenido queda sin clip-path (no se corta cuando crece). */
+@keyframes branch-reveal {
+  from {
+    clip-path: circle(0% at var(--reveal-x, 50%) var(--reveal-y, 50%));
+    opacity: 0.85;
+  }
+  to {
+    clip-path: circle(260% at var(--reveal-x, 50%) var(--reveal-y, 50%));
+    opacity: 1;
+  }
+}
+
+/* Vista por defecto (mapa institucional) — fade suave */
+@keyframes branch-default-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.branch-anim-reveal {
+  animation: branch-reveal 1100ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  /* Durante la animación, ocultamos overflow para evitar artefactos del clip */
+  will-change: clip-path, opacity;
+}
+
+.branch-anim-default {
+  animation: branch-default-in 450ms ease-out both;
+}
+
+/* Reducir animaciones para usuarios con preferencia */
+@media (prefers-reduced-motion: reduce) {
+  .branch-anim-reveal,
+  .branch-anim-default {
+    animation: none !important;
+  }
+}
+
+/* =========================================================
+   Pines sobre el mapa de Argentina (sucursales)
+   ========================================================= */
+.branch-pin {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  transform: translate(-50%, -50%);
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  z-index: 5;
+  outline: none;
+}
+.branch-pin:focus-visible {
+  outline: 2px solid rgb(var(--brand-500));
+  outline-offset: 6px;
+  border-radius: 50%;
+}
+
+.branch-pin-dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgb(var(--brand-500));
+  border: 3px solid #ffffff;
+  box-shadow: 0 1px 2px rgba(14, 14, 15, 0.18),
+    0 0 0 1px rgb(var(--brand-700) / 0.25);
+  transition: transform 200ms ease-out, background-color 200ms ease-out;
+}
+
+.branch-pin-pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid rgb(var(--brand-500));
+  opacity: 0;
+  animation: branch-pin-pulse 2.2s ease-out infinite;
+  pointer-events: none;
+}
+
+/* Estado hover / activo */
+.branch-pin:hover .branch-pin-dot,
+.branch-pin:focus-visible .branch-pin-dot,
+.branch-pin.is-active .branch-pin-dot {
+  transform: scale(1.35);
+  background: rgb(var(--brand-700));
+}
+
+/* Tooltip con el nombre de la ciudad */
+.branch-pin-label {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 10px);
+  transform: translateX(-50%) translateY(4px);
+  white-space: nowrap;
+  padding: 5px 10px;
+  background: #0e0e0f;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease-out, transform 180ms ease-out;
+  box-shadow: 0 4px 12px rgba(14, 14, 15, 0.25);
+}
+.branch-pin-label::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #0e0e0f;
+}
+.branch-pin:hover .branch-pin-label,
+.branch-pin:focus-visible .branch-pin-label,
+.branch-pin.is-active .branch-pin-label {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+@keyframes branch-pin-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  80% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .branch-pin-pulse {
+    animation: none;
+  }
+  .branch-pin-dot {
+    transition: none;
+  }
+}

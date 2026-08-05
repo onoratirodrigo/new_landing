@@ -1,0 +1,112 @@
+---
+// Sección destacada: el nuevo Etman Market.
+import MarketCarousel from "./MarketCarousel.tsx";
+import { marketSlides } from "../data/marketSlides";
+---
+
+<section
+  id="etman-market"
+  class="relative py-20 md:py-28 overflow-hidden bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 text-white"
+>
+  <!-- Decoraciones -->
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute -top-32 -right-24 h-[28rem] w-[28rem] rounded-full bg-white/10 blur-3xl"
+  >
+  </div>
+  <div
+    aria-hidden="true"
+    class="pointer-events-none absolute -bottom-40 -left-24 h-[26rem] w-[26rem] rounded-full bg-brand-900/40 blur-3xl"
+  >
+  </div>
+
+  <div class="container-x relative grid lg:grid-cols-12 gap-12 items-center">
+    <div class="lg:col-span-5">
+      <span class="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/25 px-3 py-1 text-xs font-medium tracking-widest uppercase backdrop-blur">
+        <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
+        Nuevo · Plataforma B2B
+      </span>
+
+      <h2 class="font-display font-extrabold tracking-tighter2 text-4xl sm:text-5xl lg:text-6xl mt-6 leading-[1.02]">
+        Conocé el nuevo
+        <span class="block">Etman Market.</span>
+      </h2>
+
+      <p class="mt-6 max-w-2xl text-lg text-white/90 leading-relaxed">
+        Un e-commerce mayorista pensado para acelerar tu negocio: catálogo
+        completo en línea, búsqueda por patente y por código, condiciones
+        comerciales personalizadas y todo el stock de Etman en un solo lugar.
+      </p>
+
+      <ul class="mt-8 grid sm:grid-cols-2 gap-4 text-sm">
+        <li class="flex items-start gap-3">
+          <span class="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white text-brand-600 font-bold">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+          <div>
+            <div class="font-semibold">Búsqueda inteligente</div>
+            <div class="text-white/80">Por patente, por código o por sistema del vehículo.</div>
+          </div>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white text-brand-600 font-bold">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+          <div>
+            <div class="font-semibold">Pedidos 24/7</div>
+            <div class="text-white/80">Comprá, presupuestá y gestioná tus devoluciones cuando quieras.</div>
+          </div>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white text-brand-600 font-bold">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+          <div>
+            <div class="font-semibold">Condiciones del mes</div>
+            <div class="text-white/80">Promociones, lanzamientos y outlet siempre actualizados.</div>
+          </div>
+        </li>
+        <li class="flex items-start gap-3">
+          <span class="mt-0.5 inline-flex h-6 w-6 items-center justify-center rounded-full bg-white text-brand-600 font-bold">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+          <div>
+            <div class="font-semibold">Tu sucursal, tu stock</div>
+            <div class="text-white/80">Visibilidad por punto logístico para una entrega más rápida.</div>
+          </div>
+        </li>
+      </ul>
+
+      <div class="mt-10 flex flex-wrap items-center gap-3">
+        <a
+          href="https://market.etman.com.ar/login"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn bg-white text-brand-600 hover:bg-brand-50"
+        >
+          Ingresar a Etman Market
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+        <a href="#contacto" class="btn btn-light">
+          Quiero ser cliente
+        </a>
+      </div>
+    </div>
+
+    <!-- Carrusel de screenshots del Etman Market -->
+    <div class="lg:col-span-7">
+      <MarketCarousel client:load slides={marketSlides} />
+    </div>
+  </div>
+</section>

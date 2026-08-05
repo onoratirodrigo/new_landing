@@ -1,0 +1,91 @@
+---
+import { site } from "../data/site";
+
+// Parámetros para reproducir el video de YouTube como background
+const ytParams = new URLSearchParams({
+  autoplay: "1",
+  mute: "1",
+  loop: "1",
+  playlist: site.heroYoutubeId,
+  controls: "0",
+  showinfo: "0",
+  rel: "0",
+  modestbranding: "1",
+  iv_load_policy: "3",
+  playsinline: "1",
+  disablekb: "1",
+});
+const ytSrc = `https://www.youtube.com/embed/${site.heroYoutubeId}?${ytParams.toString()}`;
+---
+
+<section class="relative isolate overflow-hidden bg-ink-900 text-white min-h-screen flex items-center">
+  {/* Video de YouTube como background. El truco con las medidas en vw/vh
+      mantiene el aspecto 16:9 cubriendo el viewport. */}
+  <div class="absolute inset-0 -z-20 overflow-hidden" aria-hidden="true">
+    <iframe
+      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+      style="width: 177.78vh; height: 56.25vw; min-width: 100%; min-height: 100%;"
+      src={ytSrc}
+      title="Etman — video institucional"
+      frameborder="0"
+      loading="eager"
+      allow="autoplay; encrypted-media; picture-in-picture"
+      allowfullscreen
+    ></iframe>
+  </div>
+
+  {/* Overlay degradado para legibilidad */}
+  <div
+    class="absolute inset-0 -z-10 bg-gradient-to-br from-ink-900/85 via-ink-900/45 to-ink-900/70"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div class="container-x relative pt-28 md:pt-32 pb-32">
+    <div class="max-w-3xl">
+      <span class="animate-fade-up inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-medium tracking-wider uppercase backdrop-blur">
+        <span class="h-1.5 w-1.5 rounded-full bg-brand-500"></span>
+        Distribución mayorista · Argentina
+      </span>
+
+      <h1 class="mt-6 font-display font-extrabold tracking-tighter2 text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-[1.02]">
+        <span class="animate-fade-up [animation-delay:90ms] block">Movemos al país,</span>
+        <span class="animate-fade-up [animation-delay:200ms] block text-brand-500">repuesto a repuesto.</span>
+      </h1>
+
+      <p class="animate-fade-up [animation-delay:310ms] mt-6 max-w-2xl text-lg md:text-xl text-ink-100/90 leading-relaxed">
+        Somos la distribuidora mayorista de autopartes con mayor cobertura
+        nacional. Más de 65 años acompañando al Aftermarket con el portafolio
+        de marcas más amplio del mercado.
+      </p>
+
+      <div class="animate-fade-up [animation-delay:420ms] mt-9 flex flex-wrap items-center gap-3">
+        <a href="#productos" class="btn btn-primary">
+          Explorar productos
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+        <a href="#nosotros" class="btn btn-light">
+          Conocé Etman
+        </a>
+      </div>
+    </div>
+  </div>
+
+  {/* Figura geométrica magenta — abajo a la derecha */}
+  <div class="hero-stripe" aria-hidden="true"></div>
+
+  {/* Indicador de scroll */}
+  <a
+    href="#nosotros"
+    class="absolute bottom-28 left-1/2 -translate-x-1/2 text-white/70 hover:text-white transition-colors"
+    aria-label="Bajar"
+  >
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <polyline points="19 12 12 19 5 12"></polyline>
+    </svg>
+  </a>
+</section>

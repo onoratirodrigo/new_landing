@@ -1,0 +1,150 @@
+---
+import { categories } from "../data/categories";
+import { brands } from "../data/brands";
+import CategoryIcon from "./CategoryIcon.astro";
+---
+
+<section id="productos" class="py-20 md:py-28 bg-ink-50/40">
+  <div class="container-x">
+    <div class="max-w-3xl">
+      <span class="eyebrow">Productos</span>
+      <h2 class="section-title mt-4">
+        El portafolio más amplio del mercado.
+      </h2>
+      <p class="lead mt-5">
+        Marcas líderes, soluciones probadas y nuevas líneas para acompañar la
+        evolución de la movilidad. Pasá el mouse sobre cada categoría para ver
+        las marcas que distribuimos en ese rubro.
+      </p>
+    </div>
+
+    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      {
+        categories.map((c) => (
+          <div class="flip-card relative h-[320px]">
+            <div class="flip-card-inner">
+              {/* Cara frontal */}
+              <a
+                href={c.href}
+                class="flip-card-face flip-card-front card p-7 gap-4 no-underline"
+              >
+                <div class="h-12 w-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
+                  <CategoryIcon name={c.icon} class="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 class="font-display font-bold text-lg text-ink-900">
+                    {c.title}
+                  </h3>
+                  <p class="mt-2 text-ink-500 text-sm leading-relaxed">
+                    {c.description}
+                  </p>
+                </div>
+                <div class="mt-auto pt-4 text-brand-600 font-semibold text-sm inline-flex items-center gap-1.5">
+                  Ver marcas
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M3 12a9 9 0 1 0 9-9"></path>
+                    <polyline points="3 4 3 12 11 12"></polyline>
+                  </svg>
+                </div>
+              </a>
+
+              {/* Cara trasera con las marcas */}
+              <div class="flip-card-face flip-card-back rounded-2xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 text-white p-5 shadow-soft">
+                <div class="flex items-center gap-2 mb-3">
+                  <div class="h-8 w-8 rounded-lg bg-white/15 flex items-center justify-center">
+                    <CategoryIcon name={c.icon} class="h-4 w-4 text-white" />
+                  </div>
+                  <h3 class="font-display font-bold text-sm leading-tight">
+                    {c.title}
+                  </h3>
+                </div>
+
+                <div class="flex-1 grid grid-cols-3 gap-2 content-start">
+                  {c.brands.map((b) => (
+                    <div
+                      class="aspect-square bg-white rounded-lg p-1.5 flex items-center justify-center"
+                      title={b.name}
+                    >
+                      <img
+                        src={b.logo}
+                        alt={b.name}
+                        loading="lazy"
+                        decoding="async"
+                        class="max-h-full max-w-full object-contain"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <a
+                  href={c.href}
+                  class="mt-3 text-white/95 hover:text-white text-xs font-semibold inline-flex items-center gap-1.5 self-start"
+                >
+                  Ver categoría
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                    <polyline points="12 5 19 12 12 19" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+    </div>
+
+    {/* Marquee de marcas (logos) */}
+    <div class="mt-16">
+      <div class="text-center text-xs uppercase tracking-widest text-ink-400 font-semibold">
+        Algunas de las marcas que comercializamos
+      </div>
+      <div class="marquee mt-8">
+        <div class="marquee-track gap-14 py-4 items-center">
+          {
+            [...brands, ...brands].map((b) =>
+              b.logo ? (
+                <img
+                  src={b.logo}
+                  alt={b.name}
+                  title={b.name}
+                  loading="lazy"
+                  decoding="async"
+                  class={`shrink-0 w-auto object-contain select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-150 ${
+                    b.wide ? "h-10 md:h-12" : "h-20 md:h-24"
+                  }`}
+                />
+              ) : (
+                <span
+                  title={b.name}
+                  class="shrink-0 h-20 md:h-24 flex items-center justify-center px-3 font-display font-extrabold tracking-tighter2 text-ink-800 text-3xl md:text-4xl select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-150"
+                >
+                  {b.name}
+                </span>
+              )
+            )
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

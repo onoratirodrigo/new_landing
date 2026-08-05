@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.astro/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment
+.env
+.env.production
+.env.local
+
+# Editor
+.vscode/
+.idea/
+.DS_Store
+
+# Misc
+*.log
+
+# Capturas y assets de referencia usados durante el desarrollo
+# (no forman parte del sitio, pueden incluir datos reales de clientes)
+imgs/

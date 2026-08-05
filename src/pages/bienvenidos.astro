@@ -1,0 +1,210 @@
+---
+import PortalLayout from "../layouts/PortalLayout.astro";
+import { verifySessionCookieValue, SESSION_COOKIE } from "../lib/session";
+import { getDbPool } from "../lib/db";
+import { site } from "../data/site";
+import { formatMoneyAR } from "../lib/format";
+import EstadoCuentaTable from "../components/EstadoCuentaTable";
+import type { MovimientoRow } from "../components/EstadoCuentaTable";
+
+export const prerender = false;
+
+const session = verifySessionCookieValue(Astro.cookies.get(SESSION_COOKIE)?.value);
+if (!session) {
+  return Astro.redirect("/login");
+}
+
+const pool = getDbPool();
+
+const [sdoRows] = await pool.query(
+  `SELECT USR_SDOCLI_IMPNAC, USR_SDOCLI_CODCRD
+   FROM USR_SDOCLI
+   WHERE TRIM(USR_SDOCLI_NROCTA) = ?
+   LIMIT 1`,
+  [session.nrocta]
+);
+const sdo = (sdoRows as any[])[0];
+const saldoTotal = Number(sdo?.USR_SDOCLI_IMPNAC ?? 0);
+const limiteCredito = Number(sdo?.USR_SDOCLI_CODCRD ?? 0);
+const usoCreditoPct =
+  limiteCredito > 0 ? Math.min(100, Math.max(0, (saldoTotal / limiteCredito) * 100)) : 0;
+const usoCreditoColor =
+  usoCreditoPct >= 90 ? "bg-red-500" : usoCreditoPct >= 70 ? "bg-amber-500" : "bg-green-500";
+
+const [clienteRows] = await pool.query(
+  `SELECT VTMCLH_CNDPAG
+   FROM VTMCLH
+   WHERE TRIM(VTMCLH_NROCTA) = ? AND VTMCLH_DEBAJA = 'N'
+   LIMIT 1`,
+  [session.nrocta]
+);
+const condicionPago = (clienteRows as any[])[0]?.VTMCLH_CNDPAG?.trim() ?? "";
+
+const [movRows] = await pool.query(
+  `SELECT FECHAEMISION, FECHAVENCIMIENTO, CNDPAG, CODFOR, NROFOR, DESCRIPCION, IMPNAC, PLAESP, LINKCODFOR
+   FROM CUENTACORRIENTE
+   WHERE TRIM(NROCTA) = ? AND DEBAJA = 'N'
+   ORDER BY FECHAEMISION ASC, CUENTACORRIENTE_ID ASC`,
+  [session.nrocta]
+);
+
+function formatDate(value: Date) {
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+const TIPO_LABELS: Record<string, string> = {
+  FA: "Factura",
+  NCA: "Nota de Crédito",
+  NCB: "Nota de Crédito",
+  NDA: "Nota de Débito",
+  ND: "Nota de Débito",
+  RC: "Recibo",
+  OP: "Orden de Pago",
+};
+
+function deriveTipo(codfor: string) {
+  const code = (codfor ?? "").match(/^[A-Za-z]+/)?.[0]?.toUpperCase() ?? "";
+  return { code: code || "OTRO", label: TIPO_LABELS[code] ?? (code || "Otro") };
+}
+
+function stripTipoPrefix(descripcion: string) {
+  return String(descripcion ?? "")
+    .replace(/^(FACTURA|NOTA DE CR[EÉ]DITO|NOTA DE D[EÉ]BITO|RECIBO)\s*-?\s*/i, "")
+    .trim();
+}
+
+const hoy = new Date();
+hoy.setHours(0, 0, 0, 0);
+
+function withRunningSubtotal(rows: any[]) {
+  let running = 0;
+  return rows.map((row) => {
+    running += Number(row.IMPNAC);
+    return { ...row, subtotal: running };
+  });
+}
+
+const plazoMovs = withRunningSubtotal((movRows as any[]).filter((r) => r.PLAESP === "S"));
+const normalMovs = withRunningSubtotal((movRows as any[]).filter((r) => r.PLAESP !== "S"));
+
+const movimientos: MovimientoRow[] = [...plazoMovs, ...normalMovs].map((row) => {
+  const fechaVencimiento = new Date(row.FECHAVENCIMIENTO);
+  const isOverdue = fechaVencimiento < hoy;
+  const { code: tipoCode, label: tipoLabel } = deriveTipo(row.CODFOR);
+  return {
+    fechaMovimiento: formatDate(row.FECHAEMISION),
+    fechaVencimiento: formatDate(row.FECHAVENCIMIENTO),
+    cndpag: row.CNDPAG,
+    codfor: row.CODFOR,
+    nrofor: String(row.NROFOR),
+    descripcionTipo: stripTipoPrefix(row.DESCRIPCION),
+    linkPdf: row.LINKCODFOR || null,
+    saldo: Number(row.IMPNAC),
+    subtotal: Number(row.subtotal),
+    isOverdue,
+    tipoCode,
+    tipoLabel,
+  };
+});
+
+const deudaVencida = movimientos
+  .filter((m) => m.isOverdue)
+  .reduce((sum, m) => sum + m.saldo, 0);
+
+const proximoVencimiento =
+  movimientos
+    .filter((m) => !m.isOverdue)
+    .map((m) => m.fechaVencimiento)
+    .sort()[0] ?? null;
+---
+
+<PortalLayout title="Estado de cuenta | Etman">
+  <header class="bg-ink-900 text-white print:hidden">
+    <div class="container-x flex items-center justify-between py-4">
+      <div class="flex items-center gap-3">
+        <a href="/" class="inline-flex items-center">
+          <img src="/images/logo-etman-positivo.png" alt="Etman" class="h-8 w-auto" />
+        </a>
+        <span class="text-ink-500">|</span>
+        <span class="text-sm text-ink-300">Clientes</span>
+      </div>
+      <div class="flex items-center gap-4 text-sm">
+        <span class="text-ink-300">{session.nombre}</span>
+        <button
+          id="logout-btn"
+          class="rounded-full border border-ink-600 px-3 py-1.5 transition-colors hover:bg-ink-800"
+        >
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container-x py-8">
+    <h1 class="font-display text-2xl font-semibold text-ink-900">Estado de cuenta</h1>
+
+    <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div class="rounded-xl border border-ink-100 bg-white p-4 shadow-soft">
+        <p class="text-xs font-semibold uppercase tracking-widest text-ink-500">
+          Límite de Crédito
+        </p>
+        <p class="mt-1 font-display text-lg font-bold text-ink-900">
+          ${formatMoneyAR(limiteCredito)}
+        </p>
+        <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-ink-100">
+          <div class={`h-full ${usoCreditoColor}`} style={`width: ${usoCreditoPct}%`}></div>
+        </div>
+        <p class="mt-1 text-xs text-ink-500">
+          {usoCreditoPct.toFixed(0)}% utilizado (${formatMoneyAR(saldoTotal)})
+        </p>
+      </div>
+
+      <div class="rounded-xl border border-ink-100 bg-white p-4 shadow-soft">
+        <p class="text-xs font-semibold uppercase tracking-widest text-ink-500">Saldo Total</p>
+        <p class="mt-1 font-display text-lg font-bold text-ink-900">
+          ${formatMoneyAR(saldoTotal)}
+        </p>
+      </div>
+
+      <div class="rounded-xl border border-ink-100 bg-white p-4 shadow-soft">
+        <p class="text-xs font-semibold uppercase tracking-widest text-ink-500">Deuda Vencida</p>
+        <p class={`mt-1 font-display text-lg font-bold ${deudaVencida > 0 ? "text-red-600" : "text-ink-900"}`}>
+          ${formatMoneyAR(deudaVencida)}
+        </p>
+      </div>
+
+      <div class="rounded-xl border border-ink-100 bg-white p-4 shadow-soft">
+        <p class="text-xs font-semibold uppercase tracking-widest text-ink-500">
+          Próximo Vencimiento
+        </p>
+        <p class="mt-1 font-display text-lg font-bold text-ink-900">
+          {proximoVencimiento ?? "—"}
+        </p>
+      </div>
+
+      <div class="rounded-xl border-2 border-brand-600 bg-white p-4 shadow-soft">
+        <p class="rounded bg-brand-700 px-2 py-1 text-xs font-semibold text-white">
+          Condición de pago
+        </p>
+        <p class="mt-1.5 text-sm font-medium text-ink-900">{condicionPago || "—"}</p>
+        <p class="mt-2 rounded bg-brand-700 px-2 py-1 text-xs font-semibold text-white">
+          Pago con descuento
+        </p>
+        <p class="mt-1.5 text-sm font-medium text-ink-900">
+          {condicionPago || "—"} -{site.prontoPagoDescuentoPct.toFixed(2)}%
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <EstadoCuentaTable client:load movimientos={movimientos} />
+    </div>
+  </main>
+
+  <script>
+    document.getElementById("logout-btn")?.addEventListener("click", async () => {
+      await fetch("/api/logout", { method: "POST" });
+      window.location.href = "/login";
+    });
+  </script>
+</PortalLayout>

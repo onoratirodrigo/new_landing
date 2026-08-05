@@ -1,0 +1,256 @@
+---
+import { mainNav } from "../data/nav";
+import { site } from "../data/site";
+
+// Los links de sección (#nosotros, #contacto, etc.) sólo funcionan como anclas
+// en la home. Desde cualquier otra página, hay que ir primero a "/" y recién
+// ahí saltar a la sección.
+const isHome = Astro.url.pathname === "/";
+function resolveHref(href: string) {
+  return href.startsWith("#") && !isHome ? `/${href}` : href;
+}
+---
+
+<header
+  id="site-header"
+  data-home={isHome ? "true" : "false"}
+  class={`site-header fixed top-0 inset-x-0 z-40 w-full ${isHome ? "" : "is-scrolled"}`}
+>
+  <div class="container-x flex h-16 md:h-20 items-center justify-between gap-6">
+    {/* Logo. Usa mask-image con color via CSS var: blanco cuando el header
+        es transparente, magenta cuando hace scroll. */}
+    <a href="/" aria-label="Etman — Inicio" class="inline-flex items-center">
+      <span
+        role="img"
+        aria-label="Etman"
+        class="logo-mark block h-10 md:h-12 w-[110px] md:w-[130px]"
+      ></span>
+    </a>
+
+    <nav aria-label="Menú principal" class="hidden lg:flex items-center gap-1">
+      {
+        mainNav.map((item) => (
+          <a href={resolveHref(item.href)} class="header-link px-3 py-2 rounded-full text-sm font-medium transition-colors">
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="hidden md:flex items-center gap-3">
+      <label class="header-link flex items-center gap-2 px-2 text-sm font-medium transition-colors cursor-pointer select-none">
+        <span>Modo Clásico</span>
+        <span class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full">
+          <input type="checkbox" id="modo-clasico-desktop" class="peer sr-only" />
+          <span class="absolute inset-0 rounded-full bg-ink-200 transition-colors peer-checked:bg-brand-700"></span>
+          <span class="absolute left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></span>
+        </span>
+      </label>
+      <a href={site.phoneHref} class="header-link text-sm font-medium px-2 transition-colors">
+        {site.phone}
+      </a>
+      <a href="/login" class="header-link text-sm font-medium px-3 py-2 rounded-full transition-colors">
+        Ingresar
+      </a>
+      <a href={resolveHref("#contacto")} class="btn btn-primary text-sm">
+        Quiero ser cliente
+      </a>
+    </div>
+
+    {/* Toggle mobile */}
+    <button
+      id="nav-toggle"
+      type="button"
+      aria-controls="mobile-nav"
+      aria-expanded="false"
+      aria-label="Abrir menú"
+      class="header-toggle lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        width="20"
+        height="20"
+        aria-hidden="true"
+      >
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+  {/* Mobile nav */}
+  <div id="mobile-nav" class="lg:hidden hidden border-t border-ink-100 bg-white">
+    <div class="container-x py-4 flex flex-col gap-1">
+      {
+        mainNav.map((item) => (
+          <a href={resolveHref(item.href)} class="px-3 py-3 rounded-lg text-base font-medium text-ink-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">
+            {item.label}
+          </a>
+        ))
+      }
+      <a href="/login" class="px-3 py-3 rounded-lg text-base font-medium text-ink-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">
+        Ingresar
+      </a>
+      <label class="flex items-center justify-between px-3 py-3 rounded-lg text-base font-medium text-ink-700 cursor-pointer select-none">
+        <span>Modo Clásico</span>
+        <span class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full">
+          <input type="checkbox" id="modo-clasico-mobile" class="peer sr-only" />
+          <span class="absolute inset-0 rounded-full bg-ink-200 transition-colors peer-checked:bg-brand-700"></span>
+          <span class="absolute left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5"></span>
+        </span>
+      </label>
+      <a href={resolveHref("#contacto")} class="btn btn-primary mt-3 justify-center">
+        Quiero ser cliente
+      </a>
+    </div>
+  </div>
+</header>
+
+{/* Spacer no necesario: el hero usa min-h-screen y arranca debajo del header */}
+
+<script>
+  const header = document.getElementById("site-header");
+  const btn = document.getElementById("nav-toggle");
+  const menu = document.getElementById("mobile-nav");
+
+  // Scroll: alternar la clase .is-scrolled para opacar el header.
+  // Fuera de la home el header ya arranca opaco (fondo blanco), así que no
+  // tiene sentido este toggle: dejarlo activo lo volvería a poner transparente.
+  const isHome = header?.dataset.home === "true";
+  if (header && isHome) {
+    const update = () => {
+      if (window.scrollY > 32) {
+        header.classList.add("is-scrolled");
+      } else {
+        header.classList.remove("is-scrolled");
+      }
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+  }
+
+  // "Modo Clásico": magenta -> bordeaux (#72112B) en todo el sitio.
+  // La clase ya pudo haber sido aplicada por el script inline del <head>
+  // (para evitar el flash); acá solo sincronizamos los switches y
+  // escuchamos los cambios del usuario.
+  const modoDesktop = document.getElementById("modo-clasico-desktop") as HTMLInputElement | null;
+  const modoMobile = document.getElementById("modo-clasico-mobile") as HTMLInputElement | null;
+  const modoInputs = [modoDesktop, modoMobile].filter(
+    (el): el is HTMLInputElement => el !== null
+  );
+
+  // Paso a paso de la animación: en vez de togglear la clase de golpe,
+  // interpolamos los tripletes RGB de cada variable --brand-XXX cuadro a
+  // cuadro. Como todo (fondos, texto, bordes, degradés, SVGs) lee su color
+  // final de estas variables, esto anima absolutamente todo a la vez sin
+  // depender de "transition" en CSS (que no funciona con backgrounds tipo
+  // gradiente).
+  const BRAND_KEYS = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900"];
+  const MODO_CLASICO_DURATION = 450;
+
+  function readBrandVars(): Record<string, number[]> {
+    const style = getComputedStyle(document.documentElement);
+    const out: Record<string, number[]> = {};
+    for (const k of BRAND_KEYS) {
+      out[k] = style
+        .getPropertyValue(`--brand-${k}`)
+        .trim()
+        .split(/\s+/)
+        .map(Number);
+    }
+    return out;
+  }
+
+  function writeBrandVars(vars: Record<string, number[]>) {
+    for (const k of BRAND_KEYS) {
+      document.documentElement.style.setProperty(`--brand-${k}`, vars[k].join(" "));
+    }
+  }
+
+  function clearBrandVarOverrides() {
+    for (const k of BRAND_KEYS) {
+      document.documentElement.style.removeProperty(`--brand-${k}`);
+    }
+  }
+
+  function persistModoClasico(enabled: boolean) {
+    try {
+      localStorage.setItem("modoClasico", String(enabled));
+    } catch (e) {}
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", enabled ? "#72112B" : "#E91E63");
+    modoInputs.forEach((el) => {
+      el.checked = enabled;
+    });
+  }
+
+  function applyModoClasico(enabled: boolean) {
+    const root = document.documentElement;
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    persistModoClasico(enabled);
+
+    if (prefersReducedMotion) {
+      root.classList.toggle("modo-clasico", enabled);
+      return;
+    }
+
+    const fromVars = readBrandVars();
+    // Medimos el destino togglenado la clase real y leyendo los valores
+    // que quedarían aplicados, y volvemos al estado actual enseguida (son
+    // dos operaciones síncronas, sin pintar nada en el medio).
+    root.classList.toggle("modo-clasico", enabled);
+    const toVars = readBrandVars();
+    root.classList.toggle("modo-clasico", !enabled);
+
+    const start = performance.now();
+    function tick(now: number) {
+      const t = Math.min(1, (now - start) / MODO_CLASICO_DURATION);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cúbico
+      const frame: Record<string, number[]> = {};
+      for (const k of BRAND_KEYS) {
+        frame[k] = fromVars[k].map((v, i) => Math.round(v + (toVars[k][i] - v) * eased));
+      }
+      writeBrandVars(frame);
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        root.classList.toggle("modo-clasico", enabled);
+        clearBrandVarOverrides();
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  const modoClasicoInicial = document.documentElement.classList.contains("modo-clasico");
+  modoInputs.forEach((el) => {
+    el.checked = modoClasicoInicial;
+    el.addEventListener("change", (e) => {
+      applyModoClasico((e.target as HTMLInputElement).checked);
+    });
+  });
+
+  // Toggle del menú mobile
+  if (btn && menu) {
+    btn.addEventListener("click", () => {
+      const isOpen = menu.classList.toggle("hidden") === false;
+      btn.setAttribute("aria-expanded", String(isOpen));
+      btn.setAttribute("aria-label", isOpen ? "Cerrar menú" : "Abrir menú");
+    });
+    menu.querySelectorAll("a").forEach((a) => {
+      a.addEventListener("click", () => {
+        menu.classList.add("hidden");
+        btn.setAttribute("aria-expanded", "false");
+      });
+    });
+  }
+</script>

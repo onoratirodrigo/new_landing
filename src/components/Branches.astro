@@ -1,0 +1,21 @@
+---
+import { branches } from "../data/branches";
+import { site } from "../data/site";
+import BranchExplorer from "./BranchExplorer.tsx";
+---
+
+<section id="sucursales" class="py-20 md:py-28 bg-white">
+  <div class="container-x">
+    <div class="max-w-3xl mb-10 md:mb-14">
+      <span class="eyebrow">Sucursales</span>
+      <h2 class="section-title mt-4">Llegamos a todo el país.</h2>
+      <p class="lead mt-5">
+        Siete puntos logísticos estratégicamente distribuidos para brindar una
+        solución integral a clientes y proveedores. Pasá el mouse sobre cada
+        sucursal para ver su información y ubicación.
+      </p>
+    </div>
+
+    <BranchExplorer client:load branches={branches} defaultMapUrl={site.mapUrl} />
+  </div>
+</section>
