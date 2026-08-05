@@ -6,18 +6,24 @@ import { marketSlides } from "../data/marketSlides";
 
 <section
   id="etman-market"
-  class="relative py-20 md:py-28 overflow-hidden bg-brand-600 text-white"
+  class="py-20 md:py-28 overflow-hidden bg-brand-600 text-white"
 >
-  <!-- Decoración: sólo arriba y sutil, para no romper la continuidad del
-       fondo con las secciones vecinas (abajo generaba una sombra oscura
-       visible justo en el límite con Contacto). -->
-  <div
-    aria-hidden="true"
-    class="pointer-events-none absolute -top-32 -right-24 h-[28rem] w-[28rem] rounded-full bg-white/10 blur-3xl"
-  >
-  </div>
+  {/* Wrapper con position:relative propio: si esto va directo en el
+      <section>, la sección entera pasa a competir en el mismo nivel de
+      apilado que el canvas del ShimmerGrid (ambos con z-index "implícito"
+      0) y gana por orden de DOM, tapando los puntos por completo en toda
+      la sección. Ver ShimmerGrid.astro. */}
+  <div class="relative">
+    {/* Decoración: sólo arriba y sutil, para no romper la continuidad del
+        fondo con las secciones vecinas (abajo generaba una sombra oscura
+        visible justo en el límite con Contacto). */}
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute -top-32 -right-24 h-[28rem] w-[28rem] rounded-full bg-white/10 blur-3xl"
+    >
+    </div>
 
-  <div class="container-x relative z-10 grid lg:grid-cols-12 gap-12 items-center">
+    <div class="container-x relative z-10 grid lg:grid-cols-12 gap-12 items-center">
     <div class="lg:col-span-5">
       <span class="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/25 px-3 py-1 text-xs font-medium tracking-widest uppercase backdrop-blur">
         <span class="h-1.5 w-1.5 rounded-full bg-white"></span>
@@ -105,5 +111,6 @@ import { marketSlides } from "../data/marketSlides";
     <div class="lg:col-span-7">
       <MarketCarousel client:load slides={marketSlides} />
     </div>
+  </div>
   </div>
 </section>
