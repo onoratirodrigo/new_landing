@@ -13,10 +13,16 @@ const {
   title = `${site.name} — ${site.tagline}`,
   description = "Etman es la distribuidora mayorista de autopartes con mayor cobertura nacional de Argentina. Más de 65 años de trayectoria al servicio del Aftermarket.",
 } = Astro.props;
+
+// Sólo la home tiene la sección "Etman Market" contra la que corre el
+// degradé de scroll bordeaux -> magenta (ver <script> más abajo y en
+// Header.astro). En cualquier otra página bajo BaseLayout (ej. /login)
+// no tiene sentido arrancar en bordeaux si no hay a dónde "llegar".
+const isHome = Astro.url.pathname === "/";
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang="es" data-home={isHome ? "true" : "false"}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -29,14 +35,48 @@ const {
     <script is:inline>
       // Aplicar "Modo Clásico" (si estaba guardado) antes del primer paint,
       // para evitar el flash de magenta -> bordeaux al cargar la página.
+      //
+      // Además, en la home (y sólo si Modo Clásico está apagado), el sitio
+      // arranca en bordeaux y va virando a magenta a medida que se
+      // scrollea, hasta llegar a "Etman Market" (ver detalle en
+      // Header.astro, que toma el control apenas el DOM está listo). Como
+      // toda carga de página arranca con scroll en el tope, el estado
+      // inicial correcto es bordeaux puro: lo aplicamos acá mismo para
+      // evitar el flash inverso (magenta -> bordeaux).
       (function () {
         try {
+          var root = document.documentElement;
           var isClasico = localStorage.getItem("modoClasico") === "true";
+          var prefersReducedMotion = window.matchMedia(
+            "(prefers-reduced-motion: reduce)"
+          ).matches;
+          var startsInBordeaux =
+            !isClasico && !prefersReducedMotion && root.dataset.home === "true";
+
           if (isClasico) {
-            document.documentElement.classList.add("modo-clasico");
+            root.classList.add("modo-clasico");
+          } else if (startsInBordeaux) {
+            var BORDEAUX = {
+              "50": "252 233 238",
+              "100": "248 211 221",
+              "200": "242 166 186",
+              "300": "233 109 142",
+              "400": "223 42 90",
+              "500": "114 17 43",
+              "600": "98 15 37",
+              "700": "71 11 27",
+              "800": "44 7 17",
+              "900": "27 4 10",
+            };
+            for (var k in BORDEAUX) {
+              root.style.setProperty("--brand-" + k, BORDEAUX[k]);
+            }
           }
+
           var meta = document.querySelector('meta[name="theme-color"]');
-          if (meta) meta.setAttribute("content", isClasico ? "#72112B" : "#E91E63");
+          if (meta) {
+            meta.setAttribute("content", isClasico || startsInBordeaux ? "#72112B" : "#E91E63");
+          }
         } catch (e) {}
       })();
     </script>
