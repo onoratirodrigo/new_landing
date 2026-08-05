@@ -119,17 +119,24 @@ body {
   max-width: 60ch;
 }
 
-/* Nosotros y Contacto: fondo de marca (sigue a Modo Clásico) con texto en
-   tonos blancos en vez de los oscuros pensados para fondo claro. */
+/* Secciones con fondo de marca (sigue a Modo Clásico / al degradé de
+   scroll): texto en tonos blancos en vez de los oscuros pensados para
+   fondo claro. */
 #nosotros .eyebrow,
+#productos .eyebrow,
+#sucursales .eyebrow,
 #contacto .eyebrow {
   color: rgba(255, 255, 255, 0.85);
 }
 #nosotros .section-title,
+#productos .section-title,
+#sucursales .section-title,
 #contacto .section-title {
   color: #fff;
 }
 #nosotros .lead,
+#productos .lead,
+#sucursales .lead,
 #contacto .lead {
   color: rgba(255, 255, 255, 0.85);
 }

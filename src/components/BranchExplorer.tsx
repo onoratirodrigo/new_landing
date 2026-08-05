@@ -89,7 +89,7 @@ export default function BranchExplorer({ branches, defaultMapUrl }: Props) {
                     className={`group w-full text-left rounded-xl border p-4 transition-all outline-none focus-visible:ring-2 focus-visible:ring-brand-500/50 ${
                       isActive
                         ? "border-brand-500 bg-brand-50/60 shadow-sm"
-                        : "border-ink-100 hover:border-brand-500"
+                        : "border-ink-100 bg-white hover:border-brand-500"
                     }`}
                   >
                     <div className="flex items-start gap-3">

@@ -4,7 +4,7 @@ import { brands } from "../data/brands";
 import CategoryIcon from "./CategoryIcon.astro";
 ---
 
-<section id="productos" class="py-20 md:py-28 bg-ink-50/40">
+<section id="productos" class="py-20 md:py-28 bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700">
   <div class="container-x">
     <div class="max-w-3xl">
       <span class="eyebrow">Productos</span>
@@ -113,36 +113,40 @@ import CategoryIcon from "./CategoryIcon.astro";
       }
     </div>
 
-    {/* Marquee de marcas (logos) */}
+    {/* Marquee de marcas (logos). Van sobre una tira blanca propia: varios
+        logos vienen con fondo blanco "horneado" en el PNG, así que
+        mostrarlos directo sobre el fondo de marca quedaría inconsistente. */}
     <div class="mt-16">
-      <div class="text-center text-xs uppercase tracking-widest text-ink-400 font-semibold">
+      <div class="text-center text-xs uppercase tracking-widest text-white/60 font-semibold">
         Algunas de las marcas que comercializamos
       </div>
-      <div class="marquee mt-8">
-        <div class="marquee-track gap-14 py-4 items-center">
-          {
-            [...brands, ...brands].map((b) =>
-              b.logo ? (
-                <img
-                  src={b.logo}
-                  alt={b.name}
-                  title={b.name}
-                  loading="lazy"
-                  decoding="async"
-                  class={`shrink-0 w-auto object-contain select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-150 ${
-                    b.wide ? "h-10 md:h-12" : "h-20 md:h-24"
-                  }`}
-                />
-              ) : (
-                <span
-                  title={b.name}
-                  class="shrink-0 h-20 md:h-24 flex items-center justify-center px-3 font-display font-extrabold tracking-tighter2 text-ink-800 text-3xl md:text-4xl select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-150"
-                >
-                  {b.name}
-                </span>
+      <div class="mt-8 rounded-2xl bg-white p-2 shadow-soft">
+        <div class="marquee">
+          <div class="marquee-track gap-14 py-4 items-center">
+            {
+              [...brands, ...brands].map((b) =>
+                b.logo ? (
+                  <img
+                    src={b.logo}
+                    alt={b.name}
+                    title={b.name}
+                    loading="lazy"
+                    decoding="async"
+                    class={`shrink-0 w-auto object-contain select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-150 ${
+                      b.wide ? "h-10 md:h-12" : "h-20 md:h-24"
+                    }`}
+                  />
+                ) : (
+                  <span
+                    title={b.name}
+                    class="shrink-0 h-20 md:h-24 flex items-center justify-center px-3 font-display font-extrabold tracking-tighter2 text-ink-800 text-3xl md:text-4xl select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-150"
+                  >
+                    {b.name}
+                  </span>
+                )
               )
-            )
-          }
+            }
+          </div>
         </div>
       </div>
     </div>
