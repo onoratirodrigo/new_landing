@@ -58,6 +58,11 @@ export default {
       letterSpacing: {
         tighter2: "-0.035em",
       },
+      boxShadow: {
+        // Alias de la variable CSS --shadow-soft (ver global.css), para
+        // poder usarla como clase de Tailwind (shadow-soft) en el markup.
+        soft: "var(--shadow-soft)",
+      },
       animation: {
         "fade-up": "fadeUp 0.7s ease-out both",
         marquee: "marquee 35s linear infinite",

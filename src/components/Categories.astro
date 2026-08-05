@@ -20,13 +20,16 @@ import CategoryIcon from "./CategoryIcon.astro";
 
     <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {
-        categories.map((c) => (
-          <div class="flip-card relative h-[320px]">
+        categories.map((c, i) => (
+          <div
+            class="flip-card relative h-[320px]"
+            style={`transition-delay: ${i * 90}ms`}
+          >
             <div class="flip-card-inner">
               {/* Cara frontal */}
               <a
                 href={c.href}
-                class="flip-card-face flip-card-front card p-7 gap-4 no-underline"
+                class="flip-card-face flip-card-front card p-7 gap-4 no-underline shadow-soft"
               >
                 <div class="h-12 w-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
                   <CategoryIcon name={c.icon} class="h-6 w-6" />
@@ -72,7 +75,7 @@ import CategoryIcon from "./CategoryIcon.astro";
                 <div class="flex-1 grid grid-cols-3 gap-2 content-start">
                   {c.brands.map((b) => (
                     <div
-                      class="aspect-square bg-white rounded-lg p-1.5 flex items-center justify-center"
+                      class="h-16 bg-white rounded-lg p-1.5 flex items-center justify-center"
                       title={b.name}
                     >
                       <img
@@ -152,3 +155,29 @@ import CategoryIcon from "./CategoryIcon.astro";
     </div>
   </div>
 </section>
+
+<script>
+  // Las cards de categoría aparecen (fade + subida sutil) a medida que
+  // entran en el viewport, en vez de estar ahí desde el primer render.
+  const cards = document.querySelectorAll<HTMLElement>("#productos .flip-card");
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
+
+  if (prefersReducedMotion) {
+    cards.forEach((card) => card.classList.add("is-visible"));
+  } else {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
+    cards.forEach((card) => observer.observe(card));
+  }
+</script>
