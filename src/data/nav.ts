@@ -6,7 +6,7 @@ export type NavItem = {
 export const mainNav: NavItem[] = [
   { label: "Nosotros", href: "#nosotros" },
   { label: "Productos", href: "#productos" },
-  { label: "Etman Market", href: "#etman-market" },
   { label: "Sucursales", href: "#sucursales" },
+  { label: "Etman Market", href: "#etman-market" },
   { label: "Contacto", href: "#contacto" },
 ];

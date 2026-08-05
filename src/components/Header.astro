@@ -285,17 +285,27 @@ function resolveHref(href: string) {
   // toggle manda y fija bordeaux en todo el sitio, sin que el scroll lo
   // desarme). Ver la contraparte que evita el flash inicial en
   // BaseLayout.astro.
+  //
+  // Arranca en bordeaux puro y no se mueve ni un poco hasta que "Nosotros"
+  // llega justo al tope de la pantalla (antes de eso, en Hero/Stats, se ve
+  // siempre el bordeaux completo). De ahí en adelante interpola hacia
+  // magenta a medida que se acerca a "Etman Market", donde ya queda fijo
+  // en magenta puro.
+  const nosotrosEl = document.getElementById("nosotros");
   const etmanMarketEl = document.getElementById("etman-market");
   const prefersReducedMotionScroll = window.matchMedia(
     "(prefers-reduced-motion: reduce)"
   ).matches;
-  const canRunScrollGradient = !prefersReducedMotionScroll && etmanMarketEl !== null;
+  const canRunScrollGradient =
+    !prefersReducedMotionScroll && nosotrosEl !== null && etmanMarketEl !== null;
   let scrollTicking = false;
 
   function applyScrollGradient() {
-    if (!etmanMarketEl) return;
-    const target = etmanMarketEl.offsetTop;
-    const t = target > 0 ? Math.min(1, Math.max(0, window.scrollY / target)) : 1;
+    if (!nosotrosEl || !etmanMarketEl) return;
+    const start = nosotrosEl.offsetTop;
+    const end = etmanMarketEl.offsetTop;
+    const span = end - start;
+    const t = span > 0 ? Math.min(1, Math.max(0, (window.scrollY - start) / span)) : 1;
     const frame: Record<string, number[]> = {};
     for (const k of BRAND_KEYS) {
       frame[k] = BORDEAUX[k].map((v, i) => Math.round(v + (MAGENTA[k][i] - v) * t));
