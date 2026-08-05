@@ -7,14 +7,17 @@ import Categories from "../components/Categories.astro";
 import EtmanMarket from "../components/EtmanMarket.astro";
 import Branches from "../components/Branches.astro";
 import Contact from "../components/Contact.astro";
+import ShimmerGrid from "../components/ShimmerGrid.astro";
 ---
 
 <BaseLayout>
   <Hero />
   <Stats />
-  <About />
-  <Categories />
-  <Branches />
-  <EtmanMarket />
-  <Contact />
+  <ShimmerGrid>
+    <About />
+    <Categories />
+    <Branches />
+    <EtmanMarket />
+    <Contact />
+  </ShimmerGrid>
 </BaseLayout>
