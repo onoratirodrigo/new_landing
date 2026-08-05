@@ -243,6 +243,10 @@ section[id] {
   --hdr-text-hover: #ffffff;
   --hdr-bg-hover: rgba(255, 255, 255, 0.12);
   --hdr-border: rgba(255, 255, 255, 0.35);
+  --chip-bg: rgba(255, 255, 255, 0.14);
+  --chip-border: rgba(255, 255, 255, 0.45);
+  --chip-border-hover: rgba(255, 255, 255, 0.8);
+  --chip-text: rgba(255, 255, 255, 0.95);
 
   background-color: transparent;
   border-bottom: 1px solid transparent;
@@ -258,6 +262,10 @@ section[id] {
   --hdr-text-hover: rgb(var(--brand-600));
   --hdr-bg-hover: rgb(var(--brand-50));
   --hdr-border: rgba(14, 14, 15, 0.16);
+  --chip-bg: rgb(var(--brand-50));
+  --chip-border: rgb(var(--brand-200));
+  --chip-border-hover: rgb(var(--brand-400));
+  --chip-text: rgb(var(--brand-700));
 
   background-color: rgba(255, 255, 255, 0.9);
   border-bottom-color: rgba(14, 14, 15, 0.06);
@@ -281,6 +289,18 @@ section[id] {
 .site-header .header-link:hover {
   color: var(--hdr-text-hover);
   background-color: var(--hdr-bg-hover);
+}
+
+/* Chip "Modo Clásico": pill con acento propio, para que no se pierda entre
+   los demás links del header (antes usaba .header-link y pasaba desapercibido). */
+.site-header .modo-clasico-chip {
+  background-color: var(--chip-bg);
+  border-color: var(--chip-border);
+  color: var(--chip-text);
+  transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease;
+}
+.site-header .modo-clasico-chip:hover {
+  border-color: var(--chip-border-hover);
 }
 
 /* Botón hamburguesa */

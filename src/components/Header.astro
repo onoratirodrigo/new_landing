@@ -38,7 +38,11 @@ function resolveHref(href: string) {
     </nav>
 
     <div class="hidden md:flex items-center gap-3">
-      <label class="header-link flex items-center gap-2 px-2 text-sm font-medium transition-colors cursor-pointer select-none">
+      <label class="modo-clasico-chip flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer select-none">
+        <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2 A10 10 0 0 1 12 22 Z" fill="#E91E63"></path>
+          <path d="M12 2 A10 10 0 0 0 12 22 Z" fill="#72112B"></path>
+        </svg>
         <span>Modo Clásico</span>
         <span class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full">
           <input type="checkbox" id="modo-clasico-desktop" class="peer sr-only" />
@@ -98,8 +102,14 @@ function resolveHref(href: string) {
       <a href="/login" class="px-3 py-3 rounded-lg text-base font-medium text-ink-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">
         Ingresar
       </a>
-      <label class="flex items-center justify-between px-3 py-3 rounded-lg text-base font-medium text-ink-700 cursor-pointer select-none">
-        <span>Modo Clásico</span>
+      <label class="flex items-center justify-between gap-2 rounded-lg border border-brand-200 bg-brand-50 px-3 py-3 text-base font-medium text-brand-700 cursor-pointer select-none">
+        <span class="flex items-center gap-2">
+          <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2 A10 10 0 0 1 12 22 Z" fill="#E91E63"></path>
+            <path d="M12 2 A10 10 0 0 0 12 22 Z" fill="#72112B"></path>
+          </svg>
+          <span>Modo Clásico</span>
+        </span>
         <span class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full">
           <input type="checkbox" id="modo-clasico-mobile" class="peer sr-only" />
           <span class="absolute inset-0 rounded-full bg-ink-200 transition-colors peer-checked:bg-brand-700"></span>
