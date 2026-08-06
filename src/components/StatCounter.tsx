@@ -39,15 +39,16 @@ export default function StatCounter({
   // Tira de dígitos que renderizamos en cada slot: 0-9 repetido CYCLES veces.
   const strip = Array.from({ length: CYCLES * 10 }, (_, i) => i % 10);
 
-  // Trigger on-scroll
+  // Se dispara cada vez que el contador entra en el viewport, y se
+  // resetea al salir — así la animación se reproduce de nuevo si se
+  // scrollea hacia arriba y se vuelve a bajar, en vez de quedar fija
+  // después de la primera vez.
   useEffect(() => {
     if (!ref.current) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-          observer.disconnect();
-        }
+        setInView(entry.isIntersecting);
+        if (!entry.isIntersecting) setLanded(false);
       },
       { threshold: 0.35 },
     );

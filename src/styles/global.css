@@ -397,7 +397,7 @@ section[id] {
   perspective: 1400px;
   opacity: 0;
   transform: translateY(22px);
-  transition: opacity 600ms ease, transform 600ms ease;
+  transition: opacity 950ms ease, transform 950ms ease;
 }
 .flip-card.is-visible {
   opacity: 1;
