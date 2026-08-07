@@ -10,9 +10,8 @@
 :root {
   /* Paleta de marca como tripletes RGB (sin "#" ni comas) para poder usarlas
      tanto en color sólido -- rgb(var(--brand-500)) -- como con opacidad
-     -- rgb(var(--brand-500) / 0.4) --. "Modo Clásico" pisa estos valores
-     (ver .modo-clasico más abajo) para pasar de magenta a bordeaux en todo
-     el sitio sin tocar ninguna clase de Tailwind. */
+     -- rgb(var(--brand-500) / 0.4) --. El degradé de scroll del header
+     (ver Header.astro) pisa estos valores dinámicamente. */
   --brand-50: 255 241 246;
   --brand-100: 254 224 236;
   --brand-200: 252 192 216;
@@ -40,22 +39,6 @@
     0 8px 24px -12px rgba(14, 14, 15, 0.08);
 
   --container: min(88rem, 92vw);
-}
-
-/* "Modo Clásico": paleta bordeaux (ancla exacta en brand-500 = #72112B) en
-   vez de la magenta por defecto. Se activa agregando esta clase al <html>
-   (ver toggle en Header.astro). */
-html.modo-clasico {
-  --brand-50: 252 233 238;
-  --brand-100: 248 211 221;
-  --brand-200: 242 166 186;
-  --brand-300: 233 109 142;
-  --brand-400: 223 42 90;
-  --brand-500: 114 17 43;
-  --brand-600: 98 15 37;
-  --brand-700: 71 11 27;
-  --brand-800: 44 7 17;
-  --brand-900: 27 4 10;
 }
 
 /* =========================================================
@@ -208,21 +191,55 @@ body {
   border-color: rgb(var(--brand-600) / 0.25);
 }
 
+/* Foto de la sección Nosotros. Sin sombra la imagen queda calcada sobre el
+   fondo de marca, como un recorte. Van tres capas —contacto, cuerpo y una
+   difusa y baja— porque una sola sombra ancha no distingue entre "apoyado"
+   y "flotando", y acá se busca lo segundo.
+
+   El tono es brand-900 y no negro por lo mismo que en .flip-card::before:
+   sobre el fondo de marca el negro se ve sucio y grisáceo.
+
+   Nada de hilo de luz en el filo: sobre el fondo oscuro separaba bien el
+   canto, pero en las esquinas redondeadas el trazo de 1px se corta y se
+   delata. El peso lo cargan las sombras solas. */
+.about-photo {
+  box-shadow: 0 2px 8px rgb(var(--brand-900) / 0.55),
+    0 18px 34px -6px rgb(var(--brand-900) / 0.6),
+    0 46px 84px -20px rgb(var(--brand-900) / 0.8);
+}
+
 /* Marquee de logos */
 .marquee {
   overflow: hidden;
+}
+
+/* Tira clara donde corren los logos. Tiene que ser clara porque varios
+   logos vienen con el blanco "horneado" en el PNG, pero un rectángulo
+   blanco sólido sobre el fondo de marca queda como un parche pegado: el
+   mask desvanece la tira Y los logos juntos hacia los costados, así la
+   banda se funde con el fondo en vez de cortarse con un borde duro.
+   El mask va acá (y no en .marquee) para que fondo y logos se apaguen
+   exactamente al mismo ritmo. */
+.brand-strip {
+  background: linear-gradient(
+    to bottom,
+    rgb(246 246 248),
+    #fff 10%,
+    #fff 90%,
+    rgb(246 246 248)
+  );
   -webkit-mask-image: linear-gradient(
     to right,
     transparent,
-    #000 6%,
-    #000 94%,
+    #000 14%,
+    #000 86%,
     transparent
   );
   mask-image: linear-gradient(
     to right,
     transparent,
-    #000 6%,
-    #000 94%,
+    #000 14%,
+    #000 86%,
     transparent
   );
 }
@@ -265,10 +282,6 @@ section[id] {
   --hdr-text-hover: #ffffff;
   --hdr-bg-hover: rgba(255, 255, 255, 0.12);
   --hdr-border: rgba(255, 255, 255, 0.35);
-  --chip-bg: rgba(255, 255, 255, 0.14);
-  --chip-border: rgba(255, 255, 255, 0.45);
-  --chip-border-hover: rgba(255, 255, 255, 0.8);
-  --chip-text: rgba(255, 255, 255, 0.95);
 
   background-color: transparent;
   border-bottom: 1px solid transparent;
@@ -284,10 +297,6 @@ section[id] {
   --hdr-text-hover: rgb(var(--brand-600));
   --hdr-bg-hover: rgb(var(--brand-50));
   --hdr-border: rgba(14, 14, 15, 0.16);
-  --chip-bg: rgb(var(--brand-50));
-  --chip-border: rgb(var(--brand-200));
-  --chip-border-hover: rgb(var(--brand-400));
-  --chip-text: rgb(var(--brand-700));
 
   background-color: rgba(255, 255, 255, 0.9);
   border-bottom-color: rgba(14, 14, 15, 0.06);
@@ -311,18 +320,6 @@ section[id] {
 .site-header .header-link:hover {
   color: var(--hdr-text-hover);
   background-color: var(--hdr-bg-hover);
-}
-
-/* Chip "Modo Clásico": pill con acento propio, para que no se pierda entre
-   los demás links del header (antes usaba .header-link y pasaba desapercibido). */
-.site-header .modo-clasico-chip {
-  background-color: var(--chip-bg);
-  border-color: var(--chip-border);
-  color: var(--chip-text);
-  transition: background-color 300ms ease, border-color 300ms ease, color 300ms ease;
-}
-.site-header .modo-clasico-chip:hover {
-  border-color: var(--chip-border-hover);
 }
 
 /* Botón hamburguesa */
@@ -394,7 +391,11 @@ section[id] {
    Flip cards (categorías de productos)
    ========================================================= */
 .flip-card {
-  perspective: 1400px;
+  /* Perspectiva más corta que antes (1400px): cuanto más chico el valor,
+     más se acusa el escorzo durante el giro — con 1400 la card giraba casi
+     en proyección ortográfica y por eso se leía plana. Debajo de ~900px
+     empieza a deformar de más. */
+  perspective: 1000px;
   opacity: 0;
   transform: translateY(22px);
   transition: opacity 950ms ease, transform 950ms ease;
@@ -403,17 +404,57 @@ section[id] {
   opacity: 1;
   transform: translateY(0);
 }
+/* La card crece un poco al acercarse (ver translateZ más abajo): que pise
+   a las vecinas y no al revés. */
+.flip-card:hover,
+.flip-card:focus-within {
+  z-index: 2;
+}
+
 .flip-card-inner {
   position: relative;
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transition: transform 750ms cubic-bezier(0.22, 0.61, 0.36, 1);
+  border-radius: var(--radius-lg);
+  /* La sombra va acá, en el elemento que gira, y no en un pseudo-elemento
+     fijo del contenedor: una sombra que no rota se despega del contorno en
+     cuanto la card empieza a girar y queda como un recuadro fantasma con la
+     silueta de la cara frontal. Girando junto con la card, el borde de la
+     sombra coincide siempre con el canto.
+
+     Tres capas —contacto, cuerpo y una difusa y baja— igual que en
+     .about-photo: una sola sombra ancha no distingue entre "apoyado" y
+     "flotando", y acá se busca lo segundo. Tono de marca oscuro en vez de
+     negro porque sobre el fondo magenta el negro se ve sucio y grisáceo.
+
+     Sólo offsets verticales: rotateY espeja el eje X, así que una sombra
+     corrida al costado se iría para el otro lado al dar la vuelta.
+
+     Nada de filter: blur() acá — los filtros aplanan el contexto 3D y
+     romperían el preserve-3d. Por eso box-shadow. */
+  box-shadow: 0 2px 8px rgb(var(--brand-900) / 0.5),
+    0 14px 26px -8px rgb(var(--brand-900) / 0.5),
+    0 34px 60px -20px rgb(var(--brand-900) / 0.65);
+  /* Bezier con sobrepaso: el giro pasa unos grados de largo y asienta, que
+     es lo que le da sensación de peso en vez de frenar en seco. */
+  transition: transform 800ms cubic-bezier(0.34, 1.28, 0.64, 1),
+    box-shadow 800ms ease;
 }
 .flip-card:hover .flip-card-inner,
 .flip-card:focus-within .flip-card-inner {
-  transform: rotateY(180deg);
+  /* translateZ ANTES del rotateY: en ese orden el eje Z local todavía
+     apunta al observador y la card se acerca. Invertido se alejaría.
+     Acercarse la agranda por perspectiva (~4%), que es el remate del
+     movimiento. */
+  transform: translateZ(42px) rotateY(180deg);
+  /* Al acercarse, la sombra se abre y se va más abajo: es la señal de que
+     la card se despegó del fondo. */
+  box-shadow: 0 4px 10px rgb(var(--brand-900) / 0.55),
+    0 24px 44px -8px rgb(var(--brand-900) / 0.6),
+    0 56px 96px -22px rgb(var(--brand-900) / 0.85);
 }
+
 .flip-card-face {
   position: absolute;
   inset: 0;
@@ -424,8 +465,62 @@ section[id] {
   display: flex;
   flex-direction: column;
 }
+/* .card:hover también se dispara al pasar por la card (la cara frontal es
+   un <a class="card">) y le suma un translateY que pelea con el giro.
+   Dentro del flip el movimiento lo maneja .flip-card-inner. */
+.flip-card .flip-card-front:hover {
+  transform: none;
+  border-color: var(--ink-100);
+}
 .flip-card-back {
   transform: rotateY(180deg);
+  /* Nada de bisel ni hilo de luz en el contorno: sobre el fondo de marca el
+     trazo de 1px se corta en las esquinas redondeadas y delata la cara como
+     un plano dibujado. El espesor lo cargan las sombras de .flip-card::before
+     —mismo criterio que en .about-photo. */
+}
+
+/* Sombreado direccional de cada cara. backface-visibility oculta la cara
+   justo a los 90°, así que una opacidad que recorre 0→1 durante todo el
+   giro va por la mitad exactamente cuando la cara desaparece: la frontal se
+   apaga a medida que se aleja y la trasera llega ya iluminándose y termina
+   limpia. Simula la luz barriendo la card sin keyframes — y al ser una
+   transición, se revierte sola al sacar el mouse. */
+.flip-card-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: opacity 800ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.flip-card-front::after {
+  background: linear-gradient(
+    100deg,
+    rgb(var(--brand-900) / 0.3) 0%,
+    rgb(var(--brand-900) / 0.08) 44%,
+    rgb(255 255 255 / 0.6) 74%,
+    rgb(255 255 255 / 0.05) 100%
+  );
+  opacity: 0;
+}
+.flip-card-back::after {
+  background: linear-gradient(
+    -100deg,
+    rgb(var(--brand-900) / 0.45) 0%,
+    rgb(var(--brand-900) / 0.1) 46%,
+    rgb(255 255 255 / 0.26) 78%,
+    rgb(255 255 255 / 0) 100%
+  );
+  opacity: 1;
+}
+.flip-card:hover .flip-card-front::after,
+.flip-card:focus-within .flip-card-front::after {
+  opacity: 1;
+}
+.flip-card:hover .flip-card-back::after,
+.flip-card:focus-within .flip-card-back::after {
+  opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -435,6 +530,9 @@ section[id] {
   .flip-card {
     opacity: 1;
     transform: none;
+    transition: none;
+  }
+  .flip-card-face::after {
     transition: none;
   }
 }

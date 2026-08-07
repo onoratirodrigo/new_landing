@@ -6,16 +6,17 @@ export const site = {
   phone: "0800-222-1111",
   phoneHref: "tel:08002221111",
   email: "contacto@etman.com.ar",
-  // Hero: video embebido desde YouTube (autoplay + muted + loop).
-  // Cuando se quiera usar un mp4 propio, intercambiar a heroVideo en Hero.astro.
-  heroYoutubeId: "Y7SmF4_aZjg",
+  // Hero: mp4 propio servido desde /public/videos (autoplay + muted + loop).
+  // Original en Drive: 16KV9RcKQ56yooG9S2P25MzBwcFE96TT0 (65 aniversario,
+  // "Así vivimos la semana"); acá va recomprimido y sin audio para web.
+  // Lo usa la intro del estarcido (IntroStencil.astro).
   heroVideo: "/videos/hero.mp4",
   heroPoster: "/images/hero-poster.jpg",
   // Assets locales servidos desde /public/images/
   logoUrl: "/images/logo-etman.png",
   // % de descuento por pronto pago, fijo para todos los clientes.
   prontoPagoDescuentoPct: 5,
-  mapUrl: "https://etman.com.ar/wp-content/uploads/HomeMapaArgentina02.png",
+  mapUrl: "/images/mapa-argentina.png",
   social: {
     facebook: "https://www.facebook.com/EtmanDistribuidorNacionaldeAutopartes",
     instagram: "https://www.instagram.com/etman.oficial/",

@@ -21,17 +21,20 @@
         parte del futuro.
       </p>
 
+      {/* Las dos cards son atajos a la sección que amplía cada dato: el
+          conteo de puntos logísticos lleva al mapa de sucursales, y el de
+          marcas al portafolio de productos. */}
       <div class="mt-8 grid sm:grid-cols-2 gap-4">
-        <div class="card p-5">
+        <a href="#sucursales" class="card p-5 block">
           <div class="text-brand-500 font-semibold text-sm tracking-wider uppercase">Cobertura nacional</div>
           <div class="mt-1 font-display font-bold text-lg text-ink-900">7 puntos logísticos</div>
           <p class="mt-1 text-sm text-ink-500">Estratégicamente ubicados para responder en tiempo récord.</p>
-        </div>
-        <div class="card p-5">
+        </a>
+        <a href="#productos" class="card p-5 block">
           <div class="text-brand-500 font-semibold text-sm tracking-wider uppercase">Portafolio</div>
           <div class="mt-1 font-display font-bold text-lg text-ink-900">50+ marcas líderes</div>
           <p class="mt-1 text-sm text-ink-500">Selección curada de productos automotrices y no automotrices.</p>
-        </div>
+        </a>
       </div>
 
       <a href="#contacto" class="btn btn-light mt-8">
@@ -44,7 +47,14 @@
     </div>
 
     <div class="lg:col-span-6 order-1 lg:order-2">
-      <div class="relative aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5] rounded-3xl overflow-hidden bg-brand-50">
+      {/* El fondo va oscuro y no en brand-50: la <img> no tiene radio propio,
+          la recorta el overflow-hidden de este div, y a DPR fraccionario (un
+          Windows al 125%, por ejemplo) el recorte cae una fracción de píxel
+          adentro del fondo ya pintado. Con un fondo claro eso asoma como un
+          hilo rosa en todo el borde; con uno oscuro el mismo hilo no se
+          distingue del fondo de la sección. De paso, el placeholder mientras
+          carga la imagen deja de ser un bloque rosa claro. */}
+      <div class="about-photo relative aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5] rounded-3xl overflow-hidden bg-brand-800">
         <img
           src="/images/nosotros.png"
           alt="Equipo y operaciones de Etman"

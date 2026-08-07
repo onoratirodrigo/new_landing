@@ -4,7 +4,7 @@
 
 export type CategoryBrand = {
   name: string;
-  /** URL del logo. Los logos viven en etman.com.ar; bajarlos local en /public/images/brands/ si se quiere autonomía. */
+  /** Ruta del logo en /public/images/brands/. Ver src/data/brands.ts para el listado completo. */
   logo: string;
 };
 
@@ -17,7 +17,7 @@ export type Category = {
   brands: CategoryBrand[];
 };
 
-const cdn = "https://etman.com.ar/wp-content/uploads";
+const logos = "/images/brands";
 
 export const categories: Category[] = [
   {
@@ -28,12 +28,12 @@ export const categories: Category[] = [
     icon: "engine",
     href: "#productos",
     brands: [
-      { name: "Gates", logo: `${cdn}/Gates-1-300x300.png` },
-      { name: "Sachs", logo: `${cdn}/Sachs-1-300x300.png` },
-      { name: "SKF", logo: `${cdn}/SKF-3-300x300.png` },
-      { name: "Mahle", logo: `${cdn}/Mahle-1-300x300.png` },
-      { name: "Spicer", logo: `${cdn}/Spicer-1-300x300.png` },
-      { name: "VMG", logo: `${cdn}/VMG-1-300x300.png` },
+      { name: "Gates", logo: `${logos}/gates.png` },
+      { name: "Sachs", logo: `${logos}/sachs.png` },
+      { name: "SKF", logo: `${logos}/skf.png` },
+      { name: "Mahle", logo: `${logos}/mahle.png` },
+      { name: "Spicer", logo: `${logos}/spicer.png` },
+      { name: "VMG", logo: `${logos}/vmg.png` },
     ],
   },
   {
@@ -44,12 +44,12 @@ export const categories: Category[] = [
     icon: "brakes",
     href: "#productos",
     brands: [
-      { name: "Nakata", logo: `${cdn}/Nakata-1-300x300.png` },
-      { name: "Raybestos", logo: `${cdn}/Raybestos-1-300x300.png` },
-      { name: "Fremax", logo: `${cdn}/Fremax-2-300x300.png` },
-      { name: "FrenoSilent", logo: `${cdn}/FrenoSilent-300x300.png` },
-      { name: "TRW", logo: `${cdn}/TRW-1-300x300.png` },
-      { name: "Plasbestos", logo: `${cdn}/Plasbestos-1-300x300.png` },
+      { name: "Nakata", logo: `${logos}/nakata.png` },
+      { name: "Raybestos", logo: `${logos}/raybestos.png` },
+      { name: "Fremax", logo: `${logos}/fremax.png` },
+      { name: "FrenoSilent", logo: `${logos}/frenosilent.png` },
+      { name: "TRW", logo: `${logos}/trw.png` },
+      { name: "Plasbestos", logo: `${logos}/plasbestos.png` },
     ],
   },
   {
@@ -60,10 +60,10 @@ export const categories: Category[] = [
     icon: "filters",
     href: "#productos",
     brands: [
-      { name: "Mahle", logo: `${cdn}/Mahle-1-300x300.png` },
-      { name: "Fremec", logo: `${cdn}/Fremec-1-300x300.png` },
-      { name: "Hellux", logo: `${cdn}/Hellux-1-300x300.png` },
-      { name: "Mopar", logo: `${cdn}/Mopar-1-300x300.png` },
+      { name: "Mahle", logo: `${logos}/mahle.png` },
+      { name: "Fremec", logo: `${logos}/fremec.png` },
+      { name: "Hellux", logo: `${logos}/hellux.png` },
+      { name: "Mopar", logo: `${logos}/mopar.png` },
     ],
   },
   {
@@ -74,10 +74,10 @@ export const categories: Category[] = [
     icon: "lubricants",
     href: "#productos",
     brands: [
-      { name: "Mobil", logo: `${cdn}/Mobil-1-300x300.png` },
-      { name: "Liqui Moly", logo: `${cdn}/LiquiMoly-300x300.png` },
-      { name: "Wolf", logo: `${cdn}/Wolf-1-300x300.png` },
-      { name: "Champion", logo: `${cdn}/Champion-300x300.png` },
+      { name: "Mobil", logo: `${logos}/mobil.png` },
+      { name: "Liqui Moly", logo: `${logos}/liqui-moly.png` },
+      { name: "Wolf", logo: `${logos}/wolf.png` },
+      { name: "Champion", logo: `${logos}/champion.png` },
     ],
   },
   {
@@ -88,12 +88,12 @@ export const categories: Category[] = [
     icon: "lighting",
     href: "#productos",
     brands: [
-      { name: "Hella", logo: `${cdn}/Hella-1-300x300.png` },
-      { name: "Osram", logo: `${cdn}/Osram-1-300x300.png` },
-      { name: "NGK", logo: `${cdn}/NGK-1-300x300.png` },
-      { name: "Valeo", logo: `${cdn}/Valeo-1-300x300.png` },
-      { name: "ACDelco", logo: `${cdn}/ACDelco-1-300x300.png` },
-      { name: "Trico", logo: `${cdn}/Trico-300x300.png` },
+      { name: "Hella", logo: `${logos}/hella.png` },
+      { name: "Osram", logo: `${logos}/osram.png` },
+      { name: "NGK", logo: `${logos}/ngk.png` },
+      { name: "Valeo", logo: `${logos}/valeo.png` },
+      { name: "ACDelco", logo: `${logos}/acdelco.png` },
+      { name: "Trico", logo: `${logos}/trico.png` },
     ],
   },
   {
@@ -104,9 +104,9 @@ export const categories: Category[] = [
     icon: "tools",
     href: "#etman-market",
     brands: [
-      { name: "Crossmaster", logo: `${cdn}/Crossmaster-300x101.png` },
-      { name: "Driven", logo: `${cdn}/Driven-300x173.png` },
-      { name: "Aion", logo: `${cdn}/Aion-300x173.png` },
+      { name: "Crossmaster", logo: `${logos}/crossmaster.png` },
+      { name: "Driven", logo: `${logos}/driven.png` },
+      { name: "Aion", logo: `${logos}/aion.png` },
     ],
   },
 ];

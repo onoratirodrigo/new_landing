@@ -1,37 +1,22 @@
 ---
 import { site } from "../data/site";
-
-// Parámetros para reproducir el video de YouTube como background
-const ytParams = new URLSearchParams({
-  autoplay: "1",
-  mute: "1",
-  loop: "1",
-  playlist: site.heroYoutubeId,
-  controls: "0",
-  showinfo: "0",
-  rel: "0",
-  modestbranding: "1",
-  iv_load_policy: "3",
-  playsinline: "1",
-  disablekb: "1",
-});
-const ytSrc = `https://www.youtube.com/embed/${site.heroYoutubeId}?${ytParams.toString()}`;
 ---
 
 <section class="relative isolate overflow-hidden bg-ink-900 text-white min-h-screen flex items-center">
-  {/* Video de YouTube como background. El truco con las medidas en vw/vh
-      mantiene el aspecto 16:9 cubriendo el viewport. */}
+  {/* Video institucional propio como background. object-cover recorta al
+      viewport sin deformar y el poster tapa el hueco hasta que arranca. */}
   <div class="absolute inset-0 -z-20 overflow-hidden" aria-hidden="true">
-    <iframe
-      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-      style="width: 177.78vh; height: 56.25vw; min-width: 100%; min-height: 100%;"
-      src={ytSrc}
-      title="Etman — video institucional"
-      frameborder="0"
-      loading="eager"
-      allow="autoplay; encrypted-media; picture-in-picture"
-      allowfullscreen
-    ></iframe>
+    <video
+      class="h-full w-full object-cover pointer-events-none"
+      src={site.heroVideo}
+      poster={site.heroPoster}
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      data-hero-video
+    ></video>
   </div>
 
   {/* Overlay degradado para legibilidad */}
@@ -89,3 +74,13 @@ const ytSrc = `https://www.youtube.com/embed/${site.heroYoutubeId}?${ytParams.to
     </svg>
   </a>
 </section>
+
+<script is:inline>
+  // Un video de fondo que se reproduce solo molesta a quien pidió menos
+  // movimiento: en ese caso queda el poster fijo.
+  const heroVideo = document.querySelector("[data-hero-video]");
+  if (heroVideo && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    heroVideo.autoplay = false;
+    heroVideo.pause();
+  }
+</script>

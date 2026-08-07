@@ -16,16 +16,6 @@ const { title = "Portal de clientes | Etman" } = Astro.props;
     <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" type="image/png" href="/images/favicon-etman.png" />
     <title>{title}</title>
-    <script is:inline>
-      // Mantiene la preferencia de "Modo Clásico" elegida en el sitio principal.
-      (function () {
-        try {
-          if (localStorage.getItem("modoClasico") === "true") {
-            document.documentElement.classList.add("modo-clasico");
-          }
-        } catch (e) {}
-      })();
-    </script>
   </head>
   <body class="bg-ink-50 text-ink-900 antialiased">
     <slot />

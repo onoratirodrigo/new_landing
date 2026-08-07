@@ -23,7 +23,7 @@ export const branches: Branch[] = [
       "Gral. Martín de Gainza 1900, Trujui, Parque Industrial Rivadavia, Moreno",
     emails: ["ventas@etman.com.ar"],
     hours: [],
-    image: "https://etman.com.ar/wp-content/uploads/PIR-768x512.png",
+    image: "/images/branches/pilar.png",
     mapEmbed:
       "https://maps.google.com/maps?q=Gral.%20Mart%C3%ADn%20de%20Gainza%202060%2C%20B1664%20Trujui%2C%20Provincia%20de%20Buenos%20Aires&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 49.8, y: 36.3 },
@@ -40,7 +40,7 @@ export const branches: Branch[] = [
       "Sábados de 08:30 a 12:30 hs.",
     ],
     image:
-      "https://etman.com.ar/wp-content/uploads/casa-central-Chiclana-768x512.jpg",
+      "/images/branches/casa-central.jpg",
     mapEmbed:
       "https://maps.google.com/maps?q=Israel%2034%20Bah%C3%ADa%20Blanca%20Buenos%20Aires&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 56.5, y: 48.1 },
@@ -56,7 +56,7 @@ export const branches: Branch[] = [
       "Lunes a Viernes de 08:00 a 18:00 hs.",
       "Sábados de 08:30 a 12:30 hs.",
     ],
-    image: "https://etman.com.ar/wp-content/uploads/Cordoba-768x512.jpg",
+    image: "/images/branches/cordoba.jpg",
     mapEmbed:
       "https://maps.google.com/maps?q=Av.%20Gdor.%20Sabattini%203030%20cordoba&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 37.8, y: 38.9 },
@@ -72,7 +72,7 @@ export const branches: Branch[] = [
       "Lunes a Viernes de 08:00 a 18:00 hs.",
       "Sábados de 08:30 a 12:30 hs.",
     ],
-    image: "https://etman.com.ar/wp-content/uploads/Rosario-768x512.jpg",
+    image: "/images/branches/rosario.jpg",
     mapEmbed:
       "https://maps.google.com/maps?q=9%20de%20Julio%202361%20rosario&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 44.0, y: 34.5 },
@@ -88,7 +88,7 @@ export const branches: Branch[] = [
       "Lunes a Viernes de 08:00 a 17:00 hs.",
       "Sábados de 08:30 a 12:30 hs.",
     ],
-    image: "https://etman.com.ar/wp-content/uploads/Rafaela3-768x512.jpg",
+    image: "/images/branches/rafaela.jpg",
     mapEmbed:
       "https://maps.google.com/maps?q=Bvar.%20Lehmann%201687%20santa%20fe&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 34.3, y: 23.8 },
@@ -104,7 +104,7 @@ export const branches: Branch[] = [
       "Lunes a Viernes de 08:00 a 12:30 hs. y 15:30 a 19:30 hs.",
       "Sábados de 08:30 a 12:30 hs.",
     ],
-    image: "https://etman.com.ar/wp-content/uploads/Parana-768x512.jpg",
+    image: "/images/branches/parana.jpg",
     mapEmbed:
       "https://maps.google.com/maps?q=Av.%20Ramirez%204753%20Paran%C3%A1%20Entre%20R%C3%ADos&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 40.3, y: 27.6 },
@@ -120,7 +120,7 @@ export const branches: Branch[] = [
       "Lunes a Viernes de 08:00 a 17:00 hs.",
       "Sábados de 08:30 a 12:30 hs.",
     ],
-    image: "https://etman.com.ar/wp-content/uploads/Mendoza-768x512.jpg",
+    image: "/images/branches/mendoza.jpg",
     mapEmbed:
       "https://maps.google.com/maps?q=pasteur%20897%20guaymallen%20mendoza&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 30.7, y: 51.2 },

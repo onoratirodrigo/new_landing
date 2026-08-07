@@ -1,0 +1,509 @@
+---
+/*
+  Intro de la home: el video institucional se ve a pantalla completa y, al
+  scrollear, se va recortando dentro de la silueta del logo hasta aterrizar
+  exactamente encima del logo del header. Ahí aparece el navbar completo y
+  arranca la página real.
+
+  Cómo está armado (detalle en public/images/test/gtaVIeffect.md):
+  el bloque .intro-space sólo aporta altura de scroll; todo lo que se ve son
+  capas fixed que ocupan el viewport, y una función render(t) traduce el
+  progreso del scroll a tamaño/posición de la máscara, opacidades y recorridos.
+
+  Va montado primero de todo en index.astro, y la sección que le sigue es
+  Nosotros. Dos cosas dependen de eso: el alto de .intro-space define cuánto
+  scroll dura el efecto, y el trigger termina justo cuando Nosotros llega al
+  tope del viewport.
+*/
+import { site } from "../data/site";
+---
+
+{/*
+  Quién oculta el navbar: la clase "intro-running" la pone BaseLayout en el
+  <html> desde el servidor (con la regla CSS inline en el <head>), porque tiene
+  que estar aplicada antes del primer paint.
+
+  Acá sólo queda la red de seguridad: si el módulo de abajo no llega a cargar
+  (error de red, de parseo), el navbar tiene que volver igual en vez de quedar
+  invisible para siempre.
+
+  Se cuelga del evento "load" y no de un timer fijo: para cuando load dispara,
+  los módulos diferidos ya se ejecutaron, así que si en ese momento no está la
+  bandera es porque el módulo falló de verdad. Con un timeout a secas, una
+  conexión lenta lo hacía saltar mientras el módulo todavía venía en camino y
+  el navbar aparecía en el medio de la intro.
+*/}
+<script is:inline>
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      if (!window.__introReady) {
+        document.documentElement.classList.remove("intro-running");
+      }
+    }, 1000);
+  });
+</script>
+
+<div class="intro-space">
+  <div id="intro-wrap">
+    <div id="intro-backdrop"></div>
+    <canvas id="intro-shimmer" aria-hidden="true"></canvas>
+
+    <div id="intro-mask">
+      <div id="intro-key">
+        {/* El institucional propio, no el embed de YouTube: el embed mostraba
+            los controles del player los primeros segundos (justo cuando el
+            usuario entra) y sumaba una carga de terceros. preload="auto"
+            porque es lo primero que se ve. */}
+        <video
+          id="intro-video"
+          src={site.heroVideo}
+          poster={site.heroPoster}
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"></video>
+      </div>
+    </div>
+
+    {/*
+      El copy llega cuando el logo se va: ocupa el centro que el logo deja
+      libre y le da contenido al tramo que si no quedaría vacío. Va dentro del
+      wrap para desvanecerse junto con el telón. aria-hidden y en un <p>, no en
+      un <h1>: es decorativo y no tiene que competir con los encabezados reales
+      de las secciones que siguen.
+    */}
+    <div id="intro-copy" aria-hidden="true">
+      <span
+        data-copy-part
+        class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs font-medium tracking-wider uppercase backdrop-blur"
+      >
+        <span class="h-1.5 w-1.5 rounded-full bg-brand-400"></span>
+        Distribución mayorista · Argentina
+      </span>
+      {/*
+        Acento en brand-400 y no en el brand-500 de siempre: durante toda la
+        intro la paleta está en su extremo bordeaux (la home arranca ahí y vira
+        a magenta recién al llegar a Nosotros), así que un brand-500 sería
+        bordeaux sobre bordeaux y la línea no se leería. El 400 en ese mismo
+        extremo es #DF2A5A, que sí contrasta contra el fondo.
+      */}
+      <p
+        class="font-display font-extrabold tracking-tighter2 text-4xl sm:text-5xl md:text-6xl leading-[1.02]"
+      >
+        <span data-copy-part class="block">Movemos al país,</span>
+        <span data-copy-part class="block text-brand-400">repuesto a repuesto.</span>
+      </p>
+    </div>
+  </div>
+
+  <div id="intro-hint" aria-hidden="true">
+    <span class="intro-hint__label">Scrolleá</span>
+    <span class="intro-hint__mouse"><span class="intro-hint__dot"></span></span>
+  </div>
+</div>
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  import { createShimmer } from "../scripts/shimmer";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const root = document.documentElement;
+  const space = document.querySelector<HTMLElement>(".intro-space");
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (space && !prefersReducedMotion) {
+    // Le avisa al script inline de arriba que el módulo llegó bien y que no
+    // hace falta que su red de seguridad devuelva el navbar.
+    (window as any).__introReady = true;
+
+    const ASPECT = 300 / 126;
+
+    // Punto del logo (en fracción de la imagen) sobre el que se ancla el zoom:
+    // el centro de la segunda barra horizontal de la "E". Es el lugar con más
+    // margen sólido alrededor, así que es el que permite arrancar con la
+    // máscara gigante sin que asome ningún hueco de las letras.
+    const ANCHOR_FX = 142 / 300;
+    const ANCHOR_FY = 26 / 126;
+    // Radio sólido alrededor de ese punto, en fracción del ancho de la máscara.
+    const SOLID_FRAC = 3 / 300;
+
+    // Fases del scroll. El logo primero achica sin moverse (0 -> SETTLE) y
+    // después vuela hasta su lugar del navbar (SETTLE -> LAND). Recién cuando
+    // ya aterrizó aparece el header: si se solaparan antes se verían dos logos
+    // en distinto lugar.
+    //
+    // Entre LAND y COPY_OUT_START hay un tramo donde no pasa nada: ahí el logo
+    // ya está en el navbar y el copy queda quieto y legible. Sin esa pausa el
+    // mensaje aparece y se va sin que se llegue a leer.
+    const SETTLE = 0.42;
+    const LAND = 0.64;
+    // El copy se va del todo ANTES de que se levante el telón. Si se solapan,
+    // el mensaje y el contenido real de la página quedan a media opacidad al
+    // mismo tiempo y se ve como una doble exposición sucia.
+    const COPY_OUT_START = 0.8;
+    // El telón termina de levantarse justo en t=1, que es exactamente cuando
+    // la sección Nosotros llega al tope del viewport (el trigger termina con
+    // el borde inferior de .intro-space). Si terminara antes, se vería una
+    // franja del final de .intro-space asomando por arriba de esa sección.
+    const HANDOFF = 0.88;
+    const VIDEO_LIFT = 0.86;
+
+    // Recorrido vertical del copy, en fracción del alto de pantalla: entra
+    // desde abajo del centro y sube hasta quedar cerca del navbar. Que
+    // acompañe al logo en vez de quedarse clavado abajo es lo que hace que las
+    // dos cosas se lean como un mismo movimiento.
+    const COPY_FROM_Y = 0.2;
+    const COPY_TO_Y = -0.34;
+    const COPY_TRAVEL_START = 0.46;
+
+    const wrap = document.getElementById("intro-wrap")!;
+    const mask = document.getElementById("intro-mask")!;
+    const key = document.getElementById("intro-key")!;
+    const hint = document.getElementById("intro-hint")!;
+    const copy = document.getElementById("intro-copy")!;
+    const copyParts = Array.from(
+      document.querySelectorAll<HTMLElement>("#intro-copy [data-copy-part]")
+    );
+    const header = document.getElementById("site-header")!;
+    const headerLogo = header.querySelector<HTMLElement>(".logo-mark")!;
+
+    function clamp01(v: number) {
+      return Math.min(1, Math.max(0, v));
+    }
+    function smoothstep(a: number, b: number, v: number) {
+      const t = clamp01((v - a) / (b - a));
+      return t * t * (3 - 2 * t);
+    }
+    function lerp(a: number, b: number, t: number) {
+      return a + (b - a) * t;
+    }
+    // El rango de tamaños va de ~100.000px a ~100px. Interpolado linealmente,
+    // el 99% del scroll se ve idéntico y todo el achique pasa de golpe al
+    // final; en escala logarítmica (como un zoom real) se siente parejo.
+    function lerpZoom(a: number, b: number, t: number) {
+      return a * Math.pow(b / a, t);
+    }
+
+    // Estados clave, recalculados en cada resize.
+    let start = { w: 0, x: 0, y: 0 };
+    let settled = { w: 0, x: 0, y: 0 };
+    let landed = { w: 0, x: 0, y: 0 };
+    let viewportH = 0;
+    // Lo lee el shimmer para saber cuánto bordeaux hay a la vista.
+    let progressT = 0;
+
+    function measure() {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      viewportH = vh;
+
+      // Estado inicial: el punto de anclaje va al centro, y la máscara se
+      // agranda hasta que su radio sólido tape la esquina más lejana de la
+      // pantalla. Así no se nota que hay un recorte: se ve el video entero.
+      const anchorX = vw / 2;
+      const anchorY = vh * 0.45;
+      const maxDist = Math.hypot(
+        Math.max(anchorX, vw - anchorX),
+        Math.max(anchorY, vh - anchorY)
+      );
+      start = { w: (maxDist / SOLID_FRAC) * 1.3, x: anchorX, y: anchorY };
+
+      // Estado intermedio: logo legible, quieto en el mismo punto.
+      settled = { w: Math.min(vw * 0.5, 560), x: anchorX, y: anchorY };
+
+      // Estado final: encima del logo real del header. El .logo-mark usa
+      // "contain", así que dentro de su caja el logo se dibuja centrado y más
+      // chico — hay que apuntar a ese rectángulo, no al del elemento.
+      const box = headerLogo.getBoundingClientRect();
+      const drawnW = Math.min(box.width, box.height * ASPECT);
+      const drawnH = drawnW / ASPECT;
+      landed = {
+        w: drawnW,
+        x: box.left + (box.width - drawnW) / 2 + ANCHOR_FX * drawnW,
+        y: box.top + (box.height - drawnH) / 2 + ANCHOR_FY * drawnH,
+      };
+    }
+
+    function render(t: number) {
+      progressT = t;
+
+      const flight = smoothstep(SETTLE, LAND, t);
+      const w =
+        t <= SETTLE
+          ? lerpZoom(start.w, settled.w, smoothstep(0, SETTLE, t))
+          : lerpZoom(settled.w, landed.w, flight);
+
+      const anchorX = lerp(settled.x, landed.x, flight);
+      const anchorY = lerp(settled.y, landed.y, flight);
+
+      const left = anchorX - ANCHOR_FX * w;
+      const top = anchorY - ANCHOR_FY * (w / ASPECT);
+
+      mask.style.setProperty("mask-size", `${w}px`);
+      mask.style.setProperty("-webkit-mask-size", `${w}px`);
+      mask.style.setProperty("mask-position", `${left}px ${top}px`);
+      mask.style.setProperty("-webkit-mask-position", `${left}px ${top}px`);
+
+      key.style.transform = `scale(${lerp(1.25, 1, smoothstep(0, SETTLE, t))})`;
+      // El video se apaga ANTES de que entre el copy (que arranca en 0.50):
+      // para cuando aparece el mensaje ya no queda video a la vista, sólo el
+      // bordeaux con los puntitos y el logo sólido en blanco. Es el mismo
+      // fondo que la sección Nosotros, así que el logo retrayéndose y lo que
+      // hay detrás quedan en la misma pieza en vez de pelearse.
+      //
+      // A diferencia de una foto fija, el video pasa por planos oscuros en los
+      // que el logo perdería contraste contra el bordeaux. Dejarlo apenas por
+      // debajo del 100% sobre el fondo blanco del estarcido levanta esos
+      // planos sin lavar los que ya son claros.
+      key.style.opacity = String(VIDEO_LIFT * (1 - smoothstep(0.34, 0.48, t)));
+      hint.style.opacity = String(1 - smoothstep(0, 0.12, t));
+
+      // El recorrido del copy va lineal (no smoothstep) a propósito: atado
+      // directo al scroll se siente como una capa que se mueve con la página,
+      // no como una animación que arranca y frena por su cuenta.
+      const travel = clamp01((t - COPY_TRAVEL_START) / (HANDOFF - COPY_TRAVEL_START));
+      copy.style.transform = `translate(-50%, ${
+        lerp(COPY_FROM_Y, COPY_TO_Y, travel) * viewportH
+      }px)`;
+
+      // El escalón entre líneas es chico a propósito: con el scrub, uno grande
+      // hace que se separen demasiado si se scrollea despacio.
+      const copyOut = smoothstep(COPY_OUT_START, HANDOFF, t);
+      copyParts.forEach((el, i) => {
+        const p = smoothstep(0.5 + i * 0.04, 0.7 + i * 0.04, t);
+        el.style.opacity = String(p * (1 - copyOut));
+        el.style.transform = `translateY(${(1 - p) * 26}px)`;
+      });
+
+      const handoff = smoothstep(HANDOFF, 1, t);
+      wrap.style.opacity = String(1 - handoff);
+      header.style.opacity = String(handoff);
+      header.style.pointerEvents = handoff > 0.99 ? "" : "none";
+    }
+
+    measure();
+    render(0);
+
+    // Los puntitos aparecen recién cuando hay bordeaux a la vista: al
+    // principio el video ocupa toda la pantalla y encima de él no tienen
+    // sentido. Después se van solos junto con el telón.
+    const shimmerCanvas = document.getElementById("intro-shimmer") as HTMLCanvasElement | null;
+    if (shimmerCanvas) {
+      createShimmer({
+        canvas: shimmerCanvas,
+        getRegion: () => (progressT >= 1 ? null : { top: 0, height: window.innerHeight }),
+        getAlpha: () => smoothstep(0.1, 0.35, progressT),
+      });
+    }
+
+    const progress = { t: 0 };
+    gsap.to(progress, {
+      t: 1,
+      ease: "none",
+      onUpdate: () => render(progress.t),
+      scrollTrigger: {
+        trigger: ".intro-space",
+        start: "top top",
+        end: "bottom top",
+        scrub: 1,
+      },
+    });
+
+    window.addEventListener("resize", () => {
+      measure();
+      render(progress.t);
+      ScrollTrigger.refresh();
+    });
+  } else {
+    // Sin intro (movimiento reducido): el navbar tiene que estar visible.
+    root.classList.remove("intro-running");
+  }
+</script>
+
+<style>
+  .intro-space {
+    position: relative;
+    /* Define cuánto scroll dura el efecto. Es largo porque en el medio hay un
+       mensaje para leer. */
+    height: 320vh;
+    /* El mismo bordeaux que la sección Nosotros, que es la que sigue. Sobre
+       el final del efecto asoma por arriba una franja del tramo que queda
+       entre el borde del telón y esa sección; con el blanco del <body> se
+       veía una banda clara cortando el empalme. */
+    background: rgb(var(--brand-600));
+  }
+
+  #intro-wrap {
+    position: fixed;
+    inset: 0;
+    height: 100vh;
+    z-index: 30;
+    pointer-events: none;
+  }
+
+  /* Bordeaux oscuro (brand-700 de la paleta) en vez del 500: con un video el
+     contenido cambia todo el tiempo y contra un bordeaux medio hay planos en
+     los que el logo se pierde. Contra este, casi cualquier frame lee como
+     forma clara sobre fondo oscuro.
+
+     En vez de un color plano, un degradé radial: el centro queda en ese mismo
+     bordeaux (así el contraste del logo no cambia) y cae a casi negro en las
+     esquinas.
+
+     El foco va fijo en el punto donde el logo pasa la mayor parte del scroll,
+     no siguiéndolo. Probado de las dos formas: si la luz lo acompaña, le
+     aclara el fondo justo debajo y el logo pierde contraste en pleno vuelo.
+     Quieto, el logo viaja hacia una zona más oscura y se recorta mejor. */
+  #intro-backdrop {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      100vmax 100vmax at 50% 45%,
+      #550e21 0%,
+      #470b1b 38%,
+      #300813 72%,
+      #220509 100%
+    );
+  }
+
+  #intro-shimmer {
+    position: absolute;
+    inset: 0;
+    display: block;
+    pointer-events: none;
+  }
+
+  /* El tamaño y la posición de la máscara los maneja render(t), pero tienen
+     que estar definidos ACÁ también: el script es un módulo (diferido), y
+     entre el primer paint y su ejecución el navegador usa el default
+     (mask-size: auto = el PNG a tamaño natural, 3000x1260, arrancando en la
+     esquina). Eso hacía que al recargar se viera un logo gigante recortado
+     antes de que arrancara el efecto.
+
+     Los valores de acá replican el estado en t=0: la máscara tan agrandada
+     que su zona sólida tapa toda la pantalla (o sea, no se nota que hay
+     recorte) y anclada en el mismo punto de la "E" que usa el JS. El tamaño
+     va en vh para que el margen sólido alcance en cualquier pantalla. */
+  #intro-mask {
+    position: absolute;
+    inset: 0;
+    background: #ffffff;
+    mask-image: url("/images/logo-etman-mask.png");
+    mask-repeat: no-repeat;
+    mask-size: 20000vh;
+    mask-position: 47.3% 20.6%;
+    -webkit-mask-image: url("/images/logo-etman-mask.png");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: 20000vh;
+    -webkit-mask-position: 47.3% 20.6%;
+  }
+
+  #intro-key {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  #intro-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+
+  /* El copy arranca por debajo del centro (para no pisarse con el logo, que
+     todavía está saliendo de cuadro) y sube con el scroll. El translateY lo
+     maneja render(t); acá sólo queda el centrado horizontal. */
+  #intro-copy {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, 0);
+    width: min(90vw, 46rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.6rem;
+    text-align: center;
+    color: #fff;
+  }
+
+  #intro-copy [data-copy-part] {
+    /* Estado inicial; a partir de acá lo maneja render(t). */
+    opacity: 0;
+    will-change: transform, opacity;
+  }
+
+  /* Indicador de scroll: etiqueta + "mouse" con la ruedita bajando en loop. */
+  #intro-hint {
+    position: fixed;
+    left: 50%;
+    bottom: 5vh;
+    transform: translateX(-50%);
+    z-index: 31;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.7rem;
+    color: #fff;
+    pointer-events: none;
+  }
+
+  .intro-hint__label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
+  }
+
+  .intro-hint__mouse {
+    display: block;
+    width: 26px;
+    height: 42px;
+    border: 1.5px solid rgba(255, 255, 255, 0.75);
+    border-radius: 999px;
+    position: relative;
+  }
+
+  .intro-hint__dot {
+    position: absolute;
+    left: 50%;
+    top: 8px;
+    width: 4px;
+    height: 4px;
+    margin-left: -2px;
+    border-radius: 999px;
+    background: #fff;
+    animation: intro-hint-dot 1.8s ease-in-out infinite;
+  }
+
+  @keyframes intro-hint-dot {
+    0% {
+      transform: translateY(0);
+      opacity: 0;
+    }
+    25% {
+      opacity: 1;
+    }
+    75% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(18px);
+      opacity: 0;
+    }
+  }
+
+  /* Sin intro: el bloque no ocupa scroll y no se dibuja nada. */
+  @media (prefers-reduced-motion: reduce) {
+    .intro-space {
+      display: none;
+    }
+  }
+</style>

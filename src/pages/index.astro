@@ -1,18 +1,28 @@
 ---
+/*
+  La home ya no tiene Hero ni Stats: la intro del estarcido hace el trabajo del
+  Hero (muestra el video institucional, la volanta y el título), así que
+  repetirlo abajo hacía que el video apareciera dos veces. Los componentes
+  Hero.astro y Stats.astro siguen en el repo, sólo que no se montan acá.
+
+  El orden importa: IntroStencil termina exactamente cuando la sección que le
+  sigue llega al tope del viewport, y esa sección es Nosotros (bg-brand-600),
+  que arranca en el mismo bordeaux en el que termina la intro.
+*/
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/Hero.astro";
-import Stats from "../components/Stats.astro";
 import About from "../components/About.astro";
 import Categories from "../components/Categories.astro";
 import EtmanMarket from "../components/EtmanMarket.astro";
 import Branches from "../components/Branches.astro";
 import Contact from "../components/Contact.astro";
 import ShimmerGrid from "../components/ShimmerGrid.astro";
+import IntroStencil from "../components/IntroStencil.astro";
 ---
 
-<BaseLayout>
-  <Hero />
-  <Stats />
+{/* intro: BaseLayout necesita saberlo para ocultar el navbar desde el <head>,
+    antes del primer paint. */}
+<BaseLayout intro>
+  <IntroStencil />
   <ShimmerGrid>
     <About />
     <Categories />

@@ -29,7 +29,7 @@ import CategoryIcon from "./CategoryIcon.astro";
               {/* Cara frontal */}
               <a
                 href={c.href}
-                class="flip-card-face flip-card-front card p-7 gap-4 no-underline shadow-soft"
+                class="flip-card-face flip-card-front card p-7 gap-4 no-underline"
               >
                 <div class="h-12 w-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
                   <CategoryIcon name={c.icon} class="h-6 w-6" />
@@ -62,17 +62,25 @@ import CategoryIcon from "./CategoryIcon.astro";
               </a>
 
               {/* Cara trasera con las marcas */}
-              <div class="flip-card-face flip-card-back rounded-2xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 text-white p-5 shadow-soft">
+              {/* Ninguna de las dos caras lleva sombra propia: la sombra la
+                  pone .flip-card-inner, que es el elemento que gira, así el
+                  contorno coincide siempre con el canto de la card durante
+                  el giro (ver global.css) */}
+              <div class="flip-card-face flip-card-back rounded-2xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 text-white p-5">
                 <div class="flex items-center gap-2 mb-3">
                   <div class="h-8 w-8 rounded-lg bg-white/15 flex items-center justify-center">
-                    <CategoryIcon name={c.icon} class="h-4 w-4 text-white" />
+                    <CategoryIcon name={c.icon} class="h-3 w-3 text-white" />
                   </div>
                   <h3 class="font-display font-bold text-sm leading-tight">
                     {c.title}
                   </h3>
                 </div>
 
-                <div class="flex-1 grid grid-cols-3 auto-rows-fr gap-2">
+                {/* Alto de fila fijo (no auto-rows-fr): con "fr" la fila no
+                    puede achicarse por debajo del min-content del logo y la
+                    grilla desborda la card, y con una sola fila se estira
+                    hasta abajo. Así los tiles miden igual en todas las cards. */}
+                <div class="flex-1 min-h-0 grid grid-cols-3 auto-rows-[92px] content-start gap-2">
                   {c.brands.map((b) => (
                     <div
                       class="bg-white rounded-lg p-2 flex items-center justify-center"
@@ -116,16 +124,18 @@ import CategoryIcon from "./CategoryIcon.astro";
       }
     </div>
 
-    {/* Marquee de marcas (logos). Van sobre una tira blanca propia: varios
+    {/* Marquee de marcas (logos). Van sobre una tira clara propia: varios
         logos vienen con fondo blanco "horneado" en el PNG, así que
-        mostrarlos directo sobre el fondo de marca quedaría inconsistente. */}
+        mostrarlos directo sobre el fondo de marca quedaría inconsistente.
+        La tira no lleva borde ni radio: se desvanece a los costados junto
+        con los logos (ver .brand-strip en global.css). */}
     <div class="mt-16">
       <div class="text-center text-xs uppercase tracking-widest text-white/60 font-semibold">
         Algunas de las marcas que comercializamos
       </div>
-      <div class="mt-8 rounded-2xl bg-white p-2 shadow-soft">
+      <div class="brand-strip mt-8">
         <div class="marquee">
-          <div class="marquee-track gap-14 py-4 items-center">
+          <div class="marquee-track gap-14 py-3 items-center">
             {
               [...brands, ...brands].map((b) =>
                 b.logo ? (
@@ -135,14 +145,14 @@ import CategoryIcon from "./CategoryIcon.astro";
                     title={b.name}
                     loading="lazy"
                     decoding="async"
-                    class={`shrink-0 w-auto object-contain select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-150 ${
-                      b.wide ? "h-10 md:h-12" : "h-20 md:h-24"
+                    class={`shrink-0 w-auto object-contain select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-[1.08] ${
+                      b.wide ? "h-8 md:h-10" : "h-16 md:h-20"
                     }`}
                   />
                 ) : (
                   <span
                     title={b.name}
-                    class="shrink-0 h-20 md:h-24 flex items-center justify-center px-3 font-display font-extrabold tracking-tighter2 text-ink-800 text-3xl md:text-4xl select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-150"
+                    class="shrink-0 h-16 md:h-20 flex items-center justify-center px-3 font-display font-extrabold tracking-tighter2 text-ink-800 text-2xl md:text-3xl select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-[1.08]"
                   >
                     {b.name}
                   </span>

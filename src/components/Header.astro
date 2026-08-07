@@ -1,6 +1,5 @@
 ---
 import { mainNav } from "../data/nav";
-import { site } from "../data/site";
 
 // Los links de sección (#nosotros, #contacto, etc.) sólo funcionan como anclas
 // en la home. Desde cualquier otra página, hay que ir primero a "/" y recién
@@ -38,21 +37,6 @@ function resolveHref(href: string) {
     </nav>
 
     <div class="hidden md:flex items-center gap-3">
-      <label class="modo-clasico-chip flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors cursor-pointer select-none">
-        <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M12 2 A10 10 0 0 1 12 22 Z" fill="#E91E63"></path>
-          <path d="M12 2 A10 10 0 0 0 12 22 Z" fill="#72112B"></path>
-        </svg>
-        <span>Modo Clásico</span>
-        <span class="relative inline-flex h-5 w-9 shrink-0 items-center rounded-full">
-          <input type="checkbox" id="modo-clasico-desktop" class="peer sr-only" />
-          <span class="absolute inset-0 rounded-full bg-ink-200 transition-colors peer-checked:bg-brand-700"></span>
-          <span class="absolute left-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform peer-checked:translate-x-4"></span>
-        </span>
-      </label>
-      <a href={site.phoneHref} class="header-link text-sm font-medium px-2 transition-colors">
-        {site.phone}
-      </a>
       <a href="/login" class="header-link text-sm font-medium px-3 py-2 rounded-full transition-colors">
         Ingresar
       </a>
@@ -102,20 +86,6 @@ function resolveHref(href: string) {
       <a href="/login" class="px-3 py-3 rounded-lg text-base font-medium text-ink-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">
         Ingresar
       </a>
-      <label class="flex items-center justify-between gap-2 rounded-lg border border-brand-200 bg-brand-50 px-3 py-3 text-base font-medium text-brand-700 cursor-pointer select-none">
-        <span class="flex items-center gap-2">
-          <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M12 2 A10 10 0 0 1 12 22 Z" fill="#E91E63"></path>
-            <path d="M12 2 A10 10 0 0 0 12 22 Z" fill="#72112B"></path>
-          </svg>
-          <span>Modo Clásico</span>
-        </span>
-        <span class="relative inline-flex h-6 w-11 shrink-0 items-center rounded-full">
-          <input type="checkbox" id="modo-clasico-mobile" class="peer sr-only" />
-          <span class="absolute inset-0 rounded-full bg-ink-200 transition-colors peer-checked:bg-brand-700"></span>
-          <span class="absolute left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5"></span>
-        </span>
-      </label>
       <a href={resolveHref("#contacto")} class="btn btn-primary mt-3 justify-center">
         Quiero ser cliente
       </a>
@@ -135,8 +105,17 @@ function resolveHref(href: string) {
   // tiene sentido este toggle: dejarlo activo lo volvería a poner transparente.
   const isHome = header?.dataset.home === "true";
   if (header && isHome) {
+    // Con la intro del estarcido delante (IntroStencil.astro), el contenido
+    // real no arranca en el tope de la página: el umbral se corre para que el
+    // header siga transparente durante toda la intro y recién se opaque
+    // después. Sin esto el navbar ya llega blanco al final de la intro, y el
+    // traspaso del logo del estarcido al del header (que es blanco sobre el
+    // bordeaux) se rompe. Si no hay intro (o está desactivada por movimiento
+    // reducido), el offsetHeight es 0 y el umbral vuelve a ser el de siempre.
+    const introSpace = document.querySelector<HTMLElement>(".intro-space");
     const update = () => {
-      if (window.scrollY > 32) {
+      const introOffset = introSpace ? introSpace.offsetHeight : 0;
+      if (window.scrollY > introOffset + 32) {
         header.classList.add("is-scrolled");
       } else {
         header.classList.remove("is-scrolled");
@@ -146,28 +125,14 @@ function resolveHref(href: string) {
     window.addEventListener("scroll", update, { passive: true });
   }
 
-  // "Modo Clásico": magenta -> bordeaux (#72112B) en todo el sitio.
-  // La clase ya pudo haber sido aplicada por el script inline del <head>
-  // (para evitar el flash); acá solo sincronizamos los switches y
-  // escuchamos los cambios del usuario.
-  const modoDesktop = document.getElementById("modo-clasico-desktop") as HTMLInputElement | null;
-  const modoMobile = document.getElementById("modo-clasico-mobile") as HTMLInputElement | null;
-  const modoInputs = [modoDesktop, modoMobile].filter(
-    (el): el is HTMLInputElement => el !== null
-  );
-
-  // Paso a paso de la animación: en vez de togglear la clase de golpe,
-  // interpolamos los tripletes RGB de cada variable --brand-XXX cuadro a
-  // cuadro. Como todo (fondos, texto, bordes, degradés, SVGs) lee su color
-  // final de estas variables, esto anima absolutamente todo a la vez sin
-  // depender de "transition" en CSS (que no funciona con backgrounds tipo
-  // gradiente).
+  // Paletas fijas para el degradé de scroll: arranca en bordeaux y va
+  // virando a magenta a medida que se acerca a "Etman Market". Como todo
+  // (fondos, texto, bordes, degradés, SVGs) lee su color final de las
+  // variables --brand-XXX, interpolarlas anima absolutamente todo a la vez
+  // sin depender de "transition" en CSS (que no funciona con backgrounds
+  // tipo gradiente).
   const BRAND_KEYS = ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900"];
-  const MODO_CLASICO_DURATION = 450;
 
-  // Paletas fijas (deben coincidir con :root y html.modo-clasico en
-  // global.css) para el degradé de scroll: arranca en bordeaux y va
-  // virando a magenta a medida que se acerca a "Etman Market".
   const BORDEAUX: Record<string, number[]> = {
     "50": [252, 233, 238],
     "100": [248, 211, 221],
@@ -197,94 +162,14 @@ function resolveHref(href: string) {
     return "#" + rgb.map((v) => v.toString(16).padStart(2, "0")).join("");
   }
 
-  function readBrandVars(): Record<string, number[]> {
-    const style = getComputedStyle(document.documentElement);
-    const out: Record<string, number[]> = {};
-    for (const k of BRAND_KEYS) {
-      out[k] = style
-        .getPropertyValue(`--brand-${k}`)
-        .trim()
-        .split(/\s+/)
-        .map(Number);
-    }
-    return out;
-  }
-
   function writeBrandVars(vars: Record<string, number[]>) {
     for (const k of BRAND_KEYS) {
       document.documentElement.style.setProperty(`--brand-${k}`, vars[k].join(" "));
     }
   }
 
-  function clearBrandVarOverrides() {
-    for (const k of BRAND_KEYS) {
-      document.documentElement.style.removeProperty(`--brand-${k}`);
-    }
-  }
-
-  function persistModoClasico(enabled: boolean) {
-    try {
-      localStorage.setItem("modoClasico", String(enabled));
-    } catch (e) {}
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute("content", enabled ? "#72112B" : "#E91E63");
-    modoInputs.forEach((el) => {
-      el.checked = enabled;
-    });
-  }
-
-  function applyModoClasico(enabled: boolean, onDone?: () => void) {
-    const root = document.documentElement;
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    persistModoClasico(enabled);
-
-    if (prefersReducedMotion) {
-      root.classList.toggle("modo-clasico", enabled);
-      onDone?.();
-      return;
-    }
-
-    const fromVars = readBrandVars();
-    // Medimos el destino togglenado la clase real y leyendo los valores
-    // que quedarían aplicados, y volvemos al estado actual enseguida (son
-    // dos operaciones síncronas, sin pintar nada en el medio).
-    root.classList.toggle("modo-clasico", enabled);
-    const toVars = readBrandVars();
-    root.classList.toggle("modo-clasico", !enabled);
-
-    const start = performance.now();
-    function tick(now: number) {
-      const t = Math.min(1, (now - start) / MODO_CLASICO_DURATION);
-      const eased = 1 - Math.pow(1 - t, 3); // ease-out cúbico
-      const frame: Record<string, number[]> = {};
-      for (const k of BRAND_KEYS) {
-        frame[k] = fromVars[k].map((v, i) => Math.round(v + (toVars[k][i] - v) * eased));
-      }
-      writeBrandVars(frame);
-      if (t < 1) {
-        requestAnimationFrame(tick);
-      } else {
-        root.classList.toggle("modo-clasico", enabled);
-        clearBrandVarOverrides();
-        onDone?.();
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-
-  const modoClasicoInicial = document.documentElement.classList.contains("modo-clasico");
-  modoInputs.forEach((el) => {
-    el.checked = modoClasicoInicial;
-  });
-
-  // Degradé de scroll (bordeaux -> magenta): sólo en la home y sólo
-  // mientras Modo Clásico está apagado (si el usuario lo prende, ese
-  // toggle manda y fija bordeaux en todo el sitio, sin que el scroll lo
-  // desarme). Ver la contraparte que evita el flash inicial en
-  // BaseLayout.astro.
+  // Degradé de scroll (bordeaux -> magenta): sólo en la home. Ver la
+  // contraparte que evita el flash inicial en BaseLayout.astro.
   //
   // Arranca en bordeaux puro y no se mueve ni un poco hasta que "Nosotros"
   // llega justo al tope de la pantalla (antes de eso, en Hero/Stats, se ve
@@ -324,27 +209,10 @@ function resolveHref(href: string) {
     });
   }
 
-  if (!modoClasicoInicial && canRunScrollGradient) {
+  if (canRunScrollGradient) {
     applyScrollGradient();
     window.addEventListener("scroll", onScrollGradient, { passive: true });
   }
-
-  modoInputs.forEach((el) => {
-    el.addEventListener("change", (e) => {
-      const enabled = (e.target as HTMLInputElement).checked;
-
-      // Mientras dura la animación del toggle, el degradé de scroll no
-      // debe pisarle los valores.
-      window.removeEventListener("scroll", onScrollGradient);
-
-      applyModoClasico(enabled, () => {
-        if (!enabled && canRunScrollGradient) {
-          applyScrollGradient();
-          window.addEventListener("scroll", onScrollGradient, { passive: true });
-        }
-      });
-    });
-  });
 
   // Toggle del menú mobile
   if (btn && menu) {

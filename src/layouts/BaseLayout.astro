@@ -7,22 +7,37 @@ import { site } from "../data/site";
 interface Props {
   title?: string;
   description?: string;
+  /**
+   * La página monta <IntroStencil />. Hace falta declararlo acá y no
+   * resolverlo dentro del componente porque el header tiene que estar oculto
+   * desde el primer paint: si la clase la pusiera un script del <body>, el
+   * navbar alcanza a dibujarse antes y se ve un parpadeo al recargar.
+   */
+  intro?: boolean;
 }
 
 const {
   title = `${site.name} — ${site.tagline}`,
   description = "Etman es la distribuidora mayorista de autopartes con mayor cobertura nacional de Argentina. Más de 65 años de trayectoria al servicio del Aftermarket.",
+  intro = false,
 } = Astro.props;
 
 // Sólo la home tiene la sección "Etman Market" contra la que corre el
-// degradé de scroll bordeaux -> magenta (ver <script> más abajo y en
+// degradé de scroll bordeaux -> magenta (ver el script inline más abajo y
 // Header.astro). En cualquier otra página bajo BaseLayout (ej. /login)
 // no tiene sentido arrancar en bordeaux si no hay a dónde "llegar".
 const isHome = Astro.url.pathname === "/";
+
+// Ver dónde se usa, más abajo en el <head>.
+const introHeaderCss = "html.intro-running #site-header{opacity:0;pointer-events:none}";
 ---
 
 <!doctype html>
-<html lang="es" data-home={isHome ? "true" : "false"}>
+<html
+  lang="es"
+  data-home={isHome ? "true" : "false"}
+  class={intro ? "intro-running" : undefined}
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -32,30 +47,40 @@ const isHome = Astro.url.pathname === "/";
     <link rel="apple-touch-icon" href="/images/favicon-etman.png" />
     <link rel="shortcut icon" href="/images/favicon-etman.png" />
     <title>{title}</title>
+    {
+      /* Va inline en el <head> y no en el CSS de IntroStencil a propósito: el
+         de un componente es una hoja aparte que puede llegar después del
+         primer paint (en dev la inyecta el cliente de Vite), y entonces el
+         navbar se ve un instante antes de ocultarse. IntroStencil lo vuelve a
+         mostrar con un style inline cuando el logo aterriza.
+
+         El CSS va por set:html porque dentro de una expresión Astro leería
+         las llaves del bloque CSS como código; y con is:inline el contenido
+         es texto crudo, así que un template literal se imprimiría literal. */
+      intro && <style is:inline set:html={introHeaderCss} />
+    }
     <script is:inline>
-      // Aplicar "Modo Clásico" (si estaba guardado) antes del primer paint,
-      // para evitar el flash de magenta -> bordeaux al cargar la página.
-      //
-      // Además, en la home (y sólo si Modo Clásico está apagado), el sitio
-      // arranca en bordeaux y va virando a magenta a medida que se
-      // scrollea, hasta llegar a "Etman Market" (ver detalle en
-      // Header.astro, que toma el control apenas el DOM está listo). Como
-      // toda carga de página arranca con scroll en el tope, el estado
+      // En la home, el sitio arranca en bordeaux y va virando a magenta a
+      // medida que se scrollea, hasta llegar a "Etman Market" (ver detalle
+      // en Header.astro, que toma el control apenas el DOM está listo).
+      // Como toda carga de página arranca con scroll en el tope, el estado
       // inicial correcto es bordeaux puro: lo aplicamos acá mismo para
       // evitar el flash inverso (magenta -> bordeaux).
       (function () {
         try {
           var root = document.documentElement;
-          var isClasico = localStorage.getItem("modoClasico") === "true";
           var prefersReducedMotion = window.matchMedia(
             "(prefers-reduced-motion: reduce)"
           ).matches;
-          var startsInBordeaux =
-            !isClasico && !prefersReducedMotion && root.dataset.home === "true";
 
-          if (isClasico) {
-            root.classList.add("modo-clasico");
-          } else if (startsInBordeaux) {
+          // Sin la intro (movimiento reducido) el navbar tiene que estar
+          // visible desde el arranque: se saca la clase acá, antes del primer
+          // paint, para que no llegue a verse oculto.
+          if (prefersReducedMotion) root.classList.remove("intro-running");
+
+          var startsInBordeaux = !prefersReducedMotion && root.dataset.home === "true";
+
+          if (startsInBordeaux) {
             var BORDEAUX = {
               "50": "252 233 238",
               "100": "248 211 221",
@@ -75,7 +100,7 @@ const isHome = Astro.url.pathname === "/";
 
           var meta = document.querySelector('meta[name="theme-color"]');
           if (meta) {
-            meta.setAttribute("content", isClasico || startsInBordeaux ? "#72112B" : "#E91E63");
+            meta.setAttribute("content", startsInBordeaux ? "#72112B" : "#E91E63");
           }
         } catch (e) {}
       })();

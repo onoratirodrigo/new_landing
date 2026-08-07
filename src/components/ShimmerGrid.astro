@@ -7,6 +7,9 @@
 // re-implementa ese cálculo acá: en cada tick se lee el valor resuelto de
 // --brand-600 y se deduce qué tan "magenta" está ahora mismo).
 //
+// El dibujo en sí vive en scripts/shimmer.ts porque la intro del estarcido
+// usa la misma grilla; acá sólo se le dice qué región seguir.
+//
 // Importante: este div NO puede llevar "position: relative" (ni cualquier
 // otra que lo convierta en offsetParent). El canvas es "fixed", no lo
 // necesita para posicionarse; y Header.astro mide nosotrosEl.offsetTop /
@@ -31,181 +34,21 @@
 </style>
 
 <script>
-  const regionEl = document.getElementById("shimmer-region");
-  const canvasEl = document.getElementById("shimmer-canvas") as HTMLCanvasElement | null;
-  const ctx2d = canvasEl?.getContext("2d") ?? null;
+  import { createShimmer } from "../scripts/shimmer";
 
-  if (regionEl && canvasEl && ctx2d) {
-    // Rebindeamos a constantes con tipo no-nulo explícito: el narrowing de
-    // arriba no se propaga a las funciones anidadas más abajo (draw corre
-    // dentro de requestAnimationFrame), así que sin esto TS las trata de
-    // nuevo como "posiblemente null" ahí adentro.
-    const region: HTMLElement = regionEl;
-    const canvas: HTMLCanvasElement = canvasEl;
-    const ctx: CanvasRenderingContext2D = ctx2d;
+  const region = document.getElementById("shimmer-region");
+  const canvas = document.getElementById("shimmer-canvas") as HTMLCanvasElement | null;
 
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const hasFinePointer = window.matchMedia("(pointer: fine)").matches;
-    const canAnimate = !prefersReducedMotion;
-    const canTrackMouse = !prefersReducedMotion && hasFinePointer;
-
-    // Mismos valores que se probaron y aprobaron en el test standalone.
-    const SPACING_BORDEAUX = 32;
-    const MAGENTA_DENSITY_FACTOR = 0.6;
-    const HALO_RADIUS = 163;
-    const BOOST = 0.45;
-
-    // R del brand-600 en cada extremo (ver global.css): sirve para leer,
-    // en cualquier momento, qué tan lejos está el color actual entre
-    // bordeaux y magenta — sin importar si lo está moviendo el scroll,
-    // el toggle de Modo Clásico, o su animación de transición.
-    const BORDEAUX_600_R = 98;
-    const MAGENTA_600_R = 216;
-
-    function currentBrandT() {
-      const raw = getComputedStyle(document.documentElement)
-        .getPropertyValue("--brand-600")
-        .trim()
-        .split(/\s+/)
-        .map(Number);
-      const r = raw[0];
-      if (!Number.isFinite(r)) return 0;
-      return Math.max(0, Math.min(1, (r - BORDEAUX_600_R) / (MAGENTA_600_R - BORDEAUX_600_R)));
-    }
-
-    let dots: { x: number; y: number; phase: number; freq: number; baseR: number; baseA: number }[] = [];
-    let builtSpacing = -1;
-    let builtWidth = -1;
-    let builtHeight = -1;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-    function effectiveSpacing() {
-      const t = currentBrandT();
-      const spacing = SPACING_BORDEAUX - (SPACING_BORDEAUX - SPACING_BORDEAUX * MAGENTA_DENSITY_FACTOR) * t;
-      return Math.round(spacing);
-    }
-
-    function buildGridIfNeeded(width: number, height: number) {
-      const spacing = effectiveSpacing();
-      if (spacing === builtSpacing && width === builtWidth && height === builtHeight) return;
-      builtSpacing = spacing;
-      builtWidth = width;
-      builtHeight = height;
-
-      const cols = Math.ceil(width / spacing) + 1;
-      const rows = Math.ceil(height / spacing) + 1;
-      const offsetX = (width - (cols - 1) * spacing) / 2;
-      const next: typeof dots = [];
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          next.push({
-            x: offsetX + c * spacing,
-            y: r * spacing,
-            phase: Math.random() * Math.PI * 2,
-            freq: 0.5 + Math.random() * 0.9,
-            baseR: 1.0 + Math.random() * 0.6,
-            baseA: 0.28 + Math.random() * 0.22,
-          });
-        }
-      }
-      dots = next;
-    }
-
-    function resizeCanvas() {
-      canvas.width = window.innerWidth * dpr;
-      canvas.height = window.innerHeight * dpr;
-      canvas.style.width = window.innerWidth + "px";
-      canvas.style.height = window.innerHeight + "px";
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    const mouse = { x: -9999, y: -9999, active: false };
-    if (canTrackMouse) {
-      window.addEventListener(
-        "mousemove",
-        (e) => {
-          mouse.x = e.clientX;
-          mouse.y = e.clientY;
-          mouse.active = true;
-        },
-        { passive: true }
-      );
-      window.addEventListener("mouseleave", () => {
-        mouse.active = false;
-      });
-    }
-
-    function smooth(t: number) {
-      return t * t * (3 - 2 * t);
-    }
-
-    const start = performance.now();
-    function draw(now: number) {
-      const viewportW = window.innerWidth;
-      const viewportH = window.innerHeight;
-      const rect = region.getBoundingClientRect();
-
-      // Fuera de la franja Nosotros→Contacto no hay nada para dibujar.
-      if (rect.bottom <= 0 || rect.top >= viewportH) {
-        ctx.clearRect(0, 0, viewportW, viewportH);
-        requestAnimationFrame(draw);
-        return;
-      }
-
-      buildGridIfNeeded(viewportW, rect.height);
-      ctx.clearRect(0, 0, viewportW, viewportH);
-
-      if (mouse.active) {
-        const g = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, HALO_RADIUS * 1.35);
-        g.addColorStop(0, "rgba(255,255,255,0.10)");
-        g.addColorStop(1, "rgba(255,255,255,0)");
-        ctx.save();
-        ctx.globalCompositeOperation = "lighter";
-        ctx.fillStyle = g;
-        ctx.fillRect(0, 0, viewportW, viewportH);
-        ctx.restore();
-      }
-
-      const t = (now - start) / 1000;
-      for (const d of dots) {
-        const screenY = d.y + rect.top;
-        if (screenY < -20 || screenY > viewportH + 20) continue;
-
-        const twinkleMul = canAnimate ? 0.6 + 0.4 * Math.sin(t * d.freq + d.phase) : 1;
-
-        let boostT = 0;
-        if (mouse.active) {
-          const dx = d.x - mouse.x;
-          const dy = screenY - mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < HALO_RADIUS) {
-            boostT = smooth(1 - dist / HALO_RADIUS);
-          }
-        }
-
-        const r = d.baseR * twinkleMul + boostT * 2.4 * BOOST;
-        const a = Math.min(1, d.baseA * twinkleMul + boostT * BOOST);
-
-        ctx.beginPath();
-        ctx.arc(d.x, screenY, Math.max(0.4, r), 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
-        if (boostT > 0.05) {
-          ctx.shadowColor = `rgba(255,255,255,${(boostT * 0.9).toFixed(3)})`;
-          ctx.shadowBlur = 10 * boostT;
-        } else {
-          ctx.shadowBlur = 0;
-        }
-        ctx.fill();
-      }
-
-      requestAnimationFrame(draw);
-    }
-
-    window.addEventListener("resize", () => {
-      resizeCanvas();
-      builtWidth = -1; // fuerza a re-medir en el próximo frame
+  if (region && canvas) {
+    createShimmer({
+      canvas,
+      // Los puntos acompañan a la franja Nosotros → Contacto: fuera de ella
+      // getRegion devuelve el rect igual y el módulo se encarga de no dibujar
+      // cuando queda fuera de pantalla.
+      getRegion: () => {
+        const rect = region.getBoundingClientRect();
+        return { top: rect.top, height: rect.height };
+      },
     });
-    resizeCanvas();
-    requestAnimationFrame(draw);
   }
 </script>
