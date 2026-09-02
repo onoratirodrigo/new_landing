@@ -125,6 +125,49 @@ body {
 }
 
 /* =========================================================
+   Reveal al entrar en el viewport
+   ========================================================= */
+/* Genérico: fade + movimiento sutil para lo que hoy aparece de golpe al
+   cargar la sección (texto, cards, mapa, carrusel, formulario). Mismo
+   patrón que ya se había probado en las flip-cards de categorías (fade +
+   translateY vía IntersectionObserver), ahora compartido entre secciones
+   con [data-reveal] + src/scripts/scrollReveal.ts en vez de reimplementado
+   en cada una.
+
+   La dirección no es antojadiza: el texto sube (up) y el "objeto grande"
+   de cada sección entra desde el lado de la columna en la que vive (mapa a
+   la izquierda entra desde la izquierda, carrusel/formulario a la derecha
+   entran desde la derecha) — así el layout y la animación cuentan la misma
+   historia en vez de competir entre sí. El stagger entre ítems repetidos
+   (cards, lista de features) va con transition-delay inline en cada uno,
+   no acá. */
+[data-reveal] {
+  opacity: 0;
+  transition: opacity 700ms ease, transform 700ms ease;
+}
+[data-reveal="up"] {
+  transform: translateY(24px);
+}
+[data-reveal="from-left"] {
+  transform: translateX(-36px);
+}
+[data-reveal="from-right"] {
+  transform: translateX(36px);
+}
+[data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* =========================================================
    Botones
    ========================================================= */
 .btn {

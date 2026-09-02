@@ -5,16 +5,18 @@ import { site } from "../data/site";
 <section id="contacto" class="py-20 md:py-28 bg-brand-600">
   <div class="container-x relative z-10 grid lg:grid-cols-12 gap-12">
     <div class="lg:col-span-5">
-      <span class="eyebrow">Contacto</span>
-      <h2 class="section-title mt-4">Hablemos de tu próximo paso.</h2>
-      <p class="lead mt-5">
-        ¿Querés ser cliente Etman, sumarte como proveedor o necesitás una
-        consulta comercial? Completá el formulario y un representante se
-        comunica con vos a la brevedad.
-      </p>
+      <div data-reveal="up">
+        <span class="eyebrow">Contacto</span>
+        <h2 class="section-title mt-4">Hablemos de tu próximo paso.</h2>
+        <p class="lead mt-5">
+          ¿Querés ser cliente Etman, sumarte como proveedor o necesitás una
+          consulta comercial? Completá el formulario y un representante se
+          comunica con vos a la brevedad.
+        </p>
+      </div>
 
       <div class="mt-8 space-y-5">
-        <div class="flex items-start gap-4">
+        <div class="flex items-start gap-4" data-reveal="up">
           <div class="h-10 w-10 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
@@ -28,7 +30,7 @@ import { site } from "../data/site";
           </div>
         </div>
 
-        <div class="flex items-start gap-4">
+        <div class="flex items-start gap-4" data-reveal="up" style="transition-delay: 80ms">
           <div class="h-10 w-10 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -43,7 +45,7 @@ import { site } from "../data/site";
           </div>
         </div>
 
-        <div class="flex items-start gap-4">
+        <div class="flex items-start gap-4" data-reveal="up" style="transition-delay: 160ms">
           <div class="h-10 w-10 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
@@ -62,6 +64,7 @@ import { site } from "../data/site";
 
     <div class="lg:col-span-7">
       <form
+        data-reveal="from-right"
         class="rounded-3xl bg-white border border-ink-100 p-6 md:p-8 shadow-soft space-y-5"
         method="post"
         action="#"
