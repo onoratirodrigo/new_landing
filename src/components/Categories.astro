@@ -1,164 +1,91 @@
 ---
-import { categories } from "../data/categories";
 import { brands } from "../data/brands";
-import CategoryIcon from "./CategoryIcon.astro";
+
+// Secuencia de frames (WebP con alpha, fondo verde ya quitado con ffmpeg
+// colorkey) de la caja Etman abriéndose y los repuestos saliendo. Generada a
+// partir de public/videos/box_products_greengb.mp4 — ver frame-001..080 en
+// public/images/box-sequence/.
+const BOX_FRAME_COUNT = 80;
 ---
 
 <section id="productos" class="py-20 md:py-28 bg-brand-600">
   <div class="container-x relative z-10">
-    <div class="max-w-3xl">
-      <span class="eyebrow">Productos</span>
-      <h2 class="section-title mt-4">
-        El portafolio más amplio del mercado.
-      </h2>
-      <p class="lead mt-5">
-        Marcas líderes, soluciones probadas y nuevas líneas para acompañar la
-        evolución de la movilidad. Pasá el mouse sobre cada categoría para ver
-        las marcas que distribuimos en ese rubro.
-      </p>
-    </div>
+    {/* Bloque scrub: .box-scrub-space sólo aporta alto de scroll (ver
+        box-scrub CSS más abajo); adentro, .box-scrub-wrap es "sticky" y se
+        queda pegado bajo el header mientras dura ese alto. El título y el
+        párrafo van DENTRO del wrap (no hay una copia afuera): así se ven,
+        una sola vez, todo el tiempo junto con la caja abriéndose y el
+        carrusel de marcas, debajo del canvas. */}
+    <div class="box-scrub-space" id="box-scrub-space" data-frame-count={BOX_FRAME_COUNT}>
+      {/* wrap es flex-column con justify-content: space-between (ver
+          global.css): título pegado arriba, carrusel pegado abajo, y el
+          canvas queda centrado a mitad de camino entre los dos porque el
+          espacio libre se reparte por igual antes y después de él. */}
+      <div class="box-scrub-wrap" id="box-scrub-wrap">
+        <div class="max-w-2xl mx-auto text-center">
+          <span class="eyebrow">Productos</span>
+          <h2 class="section-title box-scrub-title mt-2">
+            El portafolio más amplio del mercado.
+          </h2>
+          <p class="lead box-scrub-lead mt-2 mx-auto">
+            Marcas líderes, soluciones probadas y nuevas líneas para
+            acompañar la evolución de la movilidad. Todo el catálogo,
+            listo para salir de la caja.
+          </p>
+        </div>
 
-    <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-      {
-        categories.map((c, i) => (
-          <div
-            class="flip-card relative h-[320px]"
-            style={`transition-delay: ${i * 90}ms`}
-          >
-            <div class="flip-card-inner">
-              {/* Cara frontal */}
-              <a
-                href={c.href}
-                class="flip-card-face flip-card-front card p-7 gap-4 no-underline"
-              >
-                <div class="h-12 w-12 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center">
-                  <CategoryIcon name={c.icon} class="h-6 w-6" />
-                </div>
-                <div>
-                  <h3 class="font-display font-bold text-lg text-ink-900">
-                    {c.title}
-                  </h3>
-                  <p class="mt-2 text-ink-500 text-sm leading-relaxed">
-                    {c.description}
-                  </p>
-                </div>
-                <div class="mt-auto pt-4 text-brand-600 font-semibold text-sm inline-flex items-center gap-1.5">
-                  Ver marcas
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M3 12a9 9 0 1 0 9-9"></path>
-                    <polyline points="3 4 3 12 11 12"></polyline>
-                  </svg>
-                </div>
-              </a>
+        {/* Brillo detrás de la caja: un halo radial centrado en el canvas,
+            no en el video (el frame en sí no tiene canal para "agregar" luz
+            sin re-procesar las 80 secuencias) — así funciona a cualquier
+            tamaño de canvas y no depende de la resolución del asset. */}
+        <div class="box-scrub-canvas-wrap">
+          <div class="box-scrub-glow" aria-hidden="true"></div>
+          <canvas
+            id="box-canvas"
+            aria-hidden="true"
+            class="box-canvas"
+            width={960}
+            height={540}
+          ></canvas>
+        </div>
 
-              {/* Cara trasera con las marcas */}
-              {/* Ninguna de las dos caras lleva sombra propia: la sombra la
-                  pone .flip-card-inner, que es el elemento que gira, así el
-                  contorno coincide siempre con el canto de la card durante
-                  el giro (ver global.css) */}
-              <div class="flip-card-face flip-card-back rounded-2xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-700 text-white p-5">
-                <div class="flex items-center gap-2 mb-3">
-                  <div class="h-8 w-8 rounded-lg bg-white/15 flex items-center justify-center">
-                    <CategoryIcon name={c.icon} class="h-3 w-3 text-white" />
-                  </div>
-                  <h3 class="font-display font-bold text-sm leading-tight">
-                    {c.title}
-                  </h3>
-                </div>
-
-                {/* Alto de fila fijo (no auto-rows-fr): con "fr" la fila no
-                    puede achicarse por debajo del min-content del logo y la
-                    grilla desborda la card, y con una sola fila se estira
-                    hasta abajo. Así los tiles miden igual en todas las cards. */}
-                <div class="flex-1 min-h-0 grid grid-cols-3 auto-rows-[92px] content-start gap-2">
-                  {c.brands.map((b) => (
-                    <div
-                      class="bg-white rounded-lg p-2 flex items-center justify-center"
-                      title={b.name}
-                    >
+        {/* Marquee de marcas (logos). Van sobre una tira clara propia: varios
+            logos vienen con fondo blanco "horneado" en el PNG, así que
+            mostrarlos directo sobre el fondo de marca quedaría inconsistente.
+            La tira no lleva borde ni radio: se desvanece a los costados junto
+            con los logos (ver .brand-strip en global.css). */}
+        <div class="box-scrub-marquee">
+          <div class="text-center text-xs uppercase tracking-widest text-white/60 font-semibold">
+            Algunas de las marcas que comercializamos
+          </div>
+          <div class="brand-strip mt-6">
+            <div class="marquee">
+              <div class="marquee-track gap-14 py-3 items-center">
+                {
+                  [...brands, ...brands].map((b) =>
+                    b.logo ? (
                       <img
                         src={b.logo}
                         alt={b.name}
+                        title={b.name}
                         loading="lazy"
                         decoding="async"
-                        class="max-h-full max-w-full object-contain"
+                        class={`shrink-0 w-auto object-contain select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-[1.08] ${
+                          b.wide ? "h-8 md:h-10" : "h-16 md:h-20"
+                        }`}
                       />
-                    </div>
-                  ))}
-                </div>
-
-                <a
-                  href={c.href}
-                  class="mt-3 text-white/95 hover:text-white text-xs font-semibold inline-flex items-center gap-1.5 self-start"
-                >
-                  Ver categoría
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.4"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
-                </a>
+                    ) : (
+                      <span
+                        title={b.name}
+                        class="shrink-0 h-16 md:h-20 flex items-center justify-center px-3 font-display font-extrabold tracking-tighter2 text-ink-800 text-2xl md:text-3xl select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-[1.08]"
+                      >
+                        {b.name}
+                      </span>
+                    )
+                  )
+                }
               </div>
             </div>
-          </div>
-        ))
-      }
-    </div>
-
-    {/* Marquee de marcas (logos). Van sobre una tira clara propia: varios
-        logos vienen con fondo blanco "horneado" en el PNG, así que
-        mostrarlos directo sobre el fondo de marca quedaría inconsistente.
-        La tira no lleva borde ni radio: se desvanece a los costados junto
-        con los logos (ver .brand-strip en global.css). */}
-    <div class="mt-16">
-      <div class="text-center text-xs uppercase tracking-widest text-white/60 font-semibold">
-        Algunas de las marcas que comercializamos
-      </div>
-      <div class="brand-strip mt-8">
-        <div class="marquee">
-          <div class="marquee-track gap-14 py-3 items-center">
-            {
-              [...brands, ...brands].map((b) =>
-                b.logo ? (
-                  <img
-                    src={b.logo}
-                    alt={b.name}
-                    title={b.name}
-                    loading="lazy"
-                    decoding="async"
-                    class={`shrink-0 w-auto object-contain select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-[1.08] ${
-                      b.wide ? "h-8 md:h-10" : "h-16 md:h-20"
-                    }`}
-                  />
-                ) : (
-                  <span
-                    title={b.name}
-                    class="shrink-0 h-16 md:h-20 flex items-center justify-center px-3 font-display font-extrabold tracking-tighter2 text-ink-800 text-2xl md:text-3xl select-none cursor-pointer transition-transform duration-300 ease-out hover:scale-[1.08]"
-                  >
-                    {b.name}
-                  </span>
-                )
-              )
-            }
           </div>
         </div>
       </div>
@@ -167,26 +94,17 @@ import CategoryIcon from "./CategoryIcon.astro";
 </section>
 
 <script>
-  // Las cards de categoría aparecen (fade + subida sutil) a medida que
-  // entran en el viewport, y vuelven a ocultarse si se scrollea hacia
-  // arriba y salen de pantalla — así la animación se repite cada vez que
-  // se llega a verlas, en vez de dispararse una sola vez.
-  const cards = document.querySelectorAll<HTMLElement>("#productos .flip-card");
-  const prefersReducedMotion = window.matchMedia(
-    "(prefers-reduced-motion: reduce)"
-  ).matches;
+  import { initBoxScrub } from "../scripts/boxScrub";
 
-  if (prefersReducedMotion) {
-    cards.forEach((card) => card.classList.add("is-visible"));
-  } else {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          entry.target.classList.toggle("is-visible", entry.isIntersecting);
-        });
-      },
-      { threshold: 0.2 }
-    );
-    cards.forEach((card) => observer.observe(card));
-  }
+  const space = document.getElementById("box-scrub-space")!;
+  const frameCount = Number(space.dataset.frameCount);
+
+  initBoxScrub({
+    space,
+    wrap: document.getElementById("box-scrub-wrap")!,
+    canvas: document.getElementById("box-canvas") as HTMLCanvasElement,
+    frameCount,
+    framePath: (i) =>
+      `/images/box-sequence/frame-${String(i + 1).padStart(3, "0")}.webp`,
+  });
 </script>
