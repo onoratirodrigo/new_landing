@@ -16,10 +16,20 @@ import { marketSlides } from "../data/marketSlides";
   <div class="relative">
     {/* Decoración: sólo arriba y sutil, para no romper la continuidad del
         fondo con las secciones vecinas (abajo generaba una sombra oscura
-        visible justo en el límite con Contacto). */}
+        visible justo en el límite con Contacto).
+
+        Antes era un círculo sólido (bg-white/10) con blur-3xl sólo en el
+        borde: por dentro seguía casi opaco parejo, y como la sección tiene
+        overflow-hidden, el recorte del borde superior caía en pleno medio
+        del círculo (todavía a intensidad casi completa) y se veía como una
+        raya recta. Con radial-gradient el desvanecido a transparente es
+        parte del relleno, no un efecto aplicado sobre el borde — así el
+        recorte cae siempre sobre una zona ya transparente, sin importar el
+        offset. */}
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute -top-32 -right-24 h-[28rem] w-[28rem] rounded-full bg-white/10 blur-3xl"
+      class="pointer-events-none absolute -top-16 -right-24 h-[28rem] w-[28rem]"
+      style="background: radial-gradient(circle, rgb(255 255 255 / 0.14), transparent 60%);"
     >
     </div>
 
