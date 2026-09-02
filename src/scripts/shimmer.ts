@@ -25,31 +25,29 @@ export interface ShimmerOptions {
 
 // Valores probados y aprobados en el test standalone original; no tocar sin
 // volver a mirarlos en pantalla.
-const SPACING_BORDEAUX = 32;
-const MAGENTA_DENSITY_FACTOR = 0.6;
-const HALO_RADIUS = 163;
+//
+// La separación entre puntos es fija: antes achicaba con el degradé de
+// scroll bordeaux -> magenta (leyendo --brand-600, ver Header.astro), pero
+// eso hacía que la grilla se viera cada vez más densa a medida que se
+// bajaba la página, sin que tuviera que ver con el efecto del mouse.
+const SPACING = 32;
 const BOOST = 0.45;
 
-// R del brand-600 en cada extremo (ver global.css): sirve para leer, en
-// cualquier momento, qué tan lejos está el color actual entre bordeaux y
-// magenta — sin importar si lo está moviendo el scroll, el toggle de Modo
-// Clásico, o su animación de transición.
-const BORDEAUX_600_R = 98;
-const MAGENTA_600_R = 216;
+// Antes había además un halo: un círculo de luz dibujado en la posición del
+// mouse, encima de todo. Se sacó porque se leía como una luz propia del
+// cursor, no como que los puntos reaccionaran. Ahora la única fuente de luz
+// son los puntos: los cercanos crecen/brillan (BOOST) y además se corren un
+// poco lejos del mouse (repulsión), y esa reacción cae de forma gaussiana
+// con la distancia (SIGMA) en vez de cortar de golpe en un radio — un corte
+// duro es justo lo que se leía como el borde de un círculo.
+const SIGMA = 150;
+const MAX_DISPLACEMENT = 16;
+const DISPLACEMENT_EASE = 0.16;
 
-function currentBrandT() {
-  const raw = getComputedStyle(document.documentElement)
-    .getPropertyValue("--brand-600")
-    .trim()
-    .split(/\s+/)
-    .map(Number);
-  const r = raw[0];
-  if (!Number.isFinite(r)) return 0;
-  return Math.max(0, Math.min(1, (r - BORDEAUX_600_R) / (MAGENTA_600_R - BORDEAUX_600_R)));
-}
-
-function smooth(t: number) {
-  return t * t * (3 - 2 * t);
+// Sin corte: nunca llega a un radio exacto donde el brillo se apague de
+// golpe, sólo se vuelve imperceptible de a poco.
+function gaussianBoost(dist: number) {
+  return Math.exp(-(dist * dist) / (2 * SIGMA * SIGMA));
 }
 
 export function createShimmer({ canvas, getRegion, getAlpha }: ShimmerOptions) {
@@ -64,39 +62,37 @@ export function createShimmer({ canvas, getRegion, getAlpha }: ShimmerOptions) {
   let dots: {
     x: number;
     y: number;
+    // Desplazamiento actual por repulsión (no la posición: ver draw()).
+    // Se anima con su propio ease, separado de x/y, para que no dependa
+    // de la posición de scroll de la región — si no, cada scroll "tironea"
+    // el desplazamiento en vez de dejarlo asentarse solo.
+    dx: number;
+    dy: number;
     phase: number;
     freq: number;
     baseR: number;
     baseA: number;
   }[] = [];
-  let builtSpacing = -1;
   let builtWidth = -1;
   let builtHeight = -1;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-  function effectiveSpacing() {
-    const t = currentBrandT();
-    const spacing =
-      SPACING_BORDEAUX - (SPACING_BORDEAUX - SPACING_BORDEAUX * MAGENTA_DENSITY_FACTOR) * t;
-    return Math.round(spacing);
-  }
-
   function buildGridIfNeeded(width: number, height: number) {
-    const spacing = effectiveSpacing();
-    if (spacing === builtSpacing && width === builtWidth && height === builtHeight) return;
-    builtSpacing = spacing;
+    if (width === builtWidth && height === builtHeight) return;
     builtWidth = width;
     builtHeight = height;
 
-    const cols = Math.ceil(width / spacing) + 1;
-    const rows = Math.ceil(height / spacing) + 1;
-    const offsetX = (width - (cols - 1) * spacing) / 2;
+    const cols = Math.ceil(width / SPACING) + 1;
+    const rows = Math.ceil(height / SPACING) + 1;
+    const offsetX = (width - (cols - 1) * SPACING) / 2;
     const next: typeof dots = [];
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         next.push({
-          x: offsetX + c * spacing,
-          y: r * spacing,
+          x: offsetX + c * SPACING,
+          y: r * SPACING,
+          dx: 0,
+          dy: 0,
           phase: Math.random() * Math.PI * 2,
           freq: 0.5 + Math.random() * 0.9,
           baseR: 1.0 + Math.random() * 0.6,
@@ -150,24 +146,6 @@ export function createShimmer({ canvas, getRegion, getAlpha }: ShimmerOptions) {
     ctx!.save();
     ctx!.globalAlpha = alpha;
 
-    if (mouse.active) {
-      const g = ctx!.createRadialGradient(
-        mouse.x,
-        mouse.y,
-        0,
-        mouse.x,
-        mouse.y,
-        HALO_RADIUS * 1.35
-      );
-      g.addColorStop(0, "rgba(255,255,255,0.10)");
-      g.addColorStop(1, "rgba(255,255,255,0)");
-      ctx!.save();
-      ctx!.globalCompositeOperation = "lighter";
-      ctx!.fillStyle = g;
-      ctx!.fillRect(0, 0, viewportW, viewportH);
-      ctx!.restore();
-    }
-
     const t = (now - start) / 1000;
     for (const d of dots) {
       const screenY = d.y + region.top;
@@ -176,20 +154,27 @@ export function createShimmer({ canvas, getRegion, getAlpha }: ShimmerOptions) {
       const twinkleMul = canAnimate ? 0.6 + 0.4 * Math.sin(t * d.freq + d.phase) : 1;
 
       let boostT = 0;
+      let targetDx = 0;
+      let targetDy = 0;
       if (mouse.active) {
         const dx = d.x - mouse.x;
         const dy = screenY - mouse.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < HALO_RADIUS) {
-          boostT = smooth(1 - dist / HALO_RADIUS);
+        const dist = Math.sqrt(dx * dx + dy * dy) || 0.0001;
+        boostT = gaussianBoost(dist);
+        if (boostT > 0.003) {
+          const mag = MAX_DISPLACEMENT * boostT;
+          targetDx = (dx / dist) * mag;
+          targetDy = (dy / dist) * mag;
         }
       }
+      d.dx += (targetDx - d.dx) * DISPLACEMENT_EASE;
+      d.dy += (targetDy - d.dy) * DISPLACEMENT_EASE;
 
       const r = d.baseR * twinkleMul + boostT * 2.4 * BOOST;
       const a = Math.min(1, d.baseA * twinkleMul + boostT * BOOST);
 
       ctx!.beginPath();
-      ctx!.arc(d.x, screenY, Math.max(0.4, r), 0, Math.PI * 2);
+      ctx!.arc(d.x + d.dx, screenY + d.dy, Math.max(0.4, r), 0, Math.PI * 2);
       ctx!.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
       if (boostT > 0.05) {
         ctx!.shadowColor = `rgba(255,255,255,${(boostT * 0.9).toFixed(3)})`;
