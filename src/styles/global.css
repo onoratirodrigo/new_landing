@@ -494,12 +494,21 @@ section[id] {
    y se ve igual de nítido en cualquier tamaño de canvas. z-index negativo
    para quedar detrás del canvas sin tocar su stacking. El pulso es sutil
    (opacidad y escala, no color) para que lea como luz ambiente y no como
-   una animación que compite con la caja abriéndose. */
+   una animación que compite con la caja abriéndose.
+
+   El ancho es relativo a .box-scrub-canvas-wrap, que es tan ancho como
+   toda la columna de texto (no como la caja: ver el comentario de esa
+   clase) — a 135% el círculo terminaba siendo bastante más grande que el
+   propio bloque, así que se salía tanto de la página (barra de scroll
+   parpadeando con el pulso) como del alto del bloque (recortarlo con
+   overflow ahí cortaba el brillo todavía visible, no ya desvanecido, y se
+   veía un borde feo). 60% lo mantiene adentro de su propio bloque en
+   cualquier pantalla, así no hace falta recortar nada en ningún lado. */
 .box-scrub-glow {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 135%;
+  width: 60%;
   aspect-ratio: 1 / 1;
   transform: translate(-50%, -50%);
   border-radius: 50%;
