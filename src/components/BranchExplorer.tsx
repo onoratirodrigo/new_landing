@@ -67,43 +67,6 @@ export default function BranchExplorer({ branches, defaultMapUrl }: Props) {
   return (
     <div>
       <div className="grid lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-        {/* Panel: mapa institucional o detalle de la sucursal */}
-        <div
-          id="branch-panel"
-          className="lg:col-span-7 relative"
-          onMouseEnter={() => {
-            if (closeTimer.current) window.clearTimeout(closeTimer.current);
-          }}
-          onMouseLeave={scheduleClose}
-        >
-          <div
-            ref={panelRef}
-            data-reveal="from-left"
-            className="relative rounded-3xl border border-ink-100 bg-white overflow-hidden shadow-soft"
-            style={
-              {
-                "--reveal-x": `${revealOrigin.x}%`,
-                "--reveal-y": `${revealOrigin.y}%`,
-              } as React.CSSProperties
-            }
-          >
-            {active ? (
-              <BranchDetail key={active.id} branch={active} />
-            ) : (
-              <DefaultMap
-                key="default"
-                mapUrl={defaultMapUrl}
-                branches={branches}
-                onPinEnter={(id, el) => open(id, el)}
-                onPinClick={(id) =>
-                  setPinned((p) => (p === id ? null : id))
-                }
-                activeId={activeId}
-              />
-            )}
-          </div>
-        </div>
-
         {/* Texto de la sección + cards */}
         <div className="lg:col-span-5">
           <div className="mb-8 md:mb-10" data-reveal="up">
@@ -166,6 +129,43 @@ export default function BranchExplorer({ branches, defaultMapUrl }: Props) {
               );
             })}
           </ul>
+        </div>
+
+        {/* Panel: mapa institucional o detalle de la sucursal */}
+        <div
+          id="branch-panel"
+          className="lg:col-span-7 relative"
+          onMouseEnter={() => {
+            if (closeTimer.current) window.clearTimeout(closeTimer.current);
+          }}
+          onMouseLeave={scheduleClose}
+        >
+          <div
+            ref={panelRef}
+            data-reveal="from-right"
+            className="relative rounded-3xl border border-ink-100 bg-white overflow-hidden shadow-soft"
+            style={
+              {
+                "--reveal-x": `${revealOrigin.x}%`,
+                "--reveal-y": `${revealOrigin.y}%`,
+              } as React.CSSProperties
+            }
+          >
+            {active ? (
+              <BranchDetail key={active.id} branch={active} />
+            ) : (
+              <DefaultMap
+                key="default"
+                mapUrl={defaultMapUrl}
+                branches={branches}
+                onPinEnter={(id, el) => open(id, el)}
+                onPinClick={(id) =>
+                  setPinned((p) => (p === id ? null : id))
+                }
+                activeId={activeId}
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
