@@ -469,6 +469,13 @@ section[id] {
   }
 }
 
+/* Mismo motivo que .box-scrub-marquee (ver más abajo): bajarlo con
+   transform, no con margin, para no alterar cómo .box-scrub-wrap reparte
+   el espacio libre — sólo lo despega del navbar sin mover el canvas. */
+.box-scrub-intro {
+  transform: translateY(40px);
+}
+
 /* .section-title/.lead de siempre: mismo tamaño que en el resto del sitio,
    aunque acá vivan adentro del wrap sticky que también aloja el canvas y el
    carrusel (ver Categories.astro). */
@@ -487,6 +494,16 @@ section[id] {
    importar cuánto mida el canvas en cada pantalla. */
 .box-scrub-canvas-wrap {
   position: relative;
+}
+
+/* .box-scrub-wrap reparte el espacio libre por igual entre el título/canvas
+   y el canvas/marquee (space-between, ver esa clase), lo que dejaba el
+   marquee pegado al borde inferior del bloque y separado de la caja.
+   Subirlo con translateY (no con margin) para no alterar esa distribución:
+   el hueco de abajo crece y el de arriba de este bloque se achica, sin
+   mover el título ni el canvas. */
+.box-scrub-marquee {
+  transform: translateY(-40px);
 }
 
 /* Halo suave detrás de la caja. Radial y no un blur de imagen: así no
