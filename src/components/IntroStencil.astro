@@ -281,7 +281,11 @@ import { site } from "../data/site";
       const handoff = smoothstep(HANDOFF, 1, t);
       wrap.style.opacity = String(1 - handoff);
       header.style.opacity = String(handoff);
-      header.style.pointerEvents = handoff > 0.99 ? "" : "none";
+      // "auto" y no "": la regla .intro-running que inyecta BaseLayout en el
+      // <head> deja el header en pointer-events:none, así que limpiar el
+      // estilo inline la devolvía a la vida y el navbar se veía pero no se
+      // podía clickear.
+      header.style.pointerEvents = handoff > 0.99 ? "auto" : "none";
     }
 
     measure();

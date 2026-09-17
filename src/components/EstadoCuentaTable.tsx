@@ -219,7 +219,7 @@ export default function EstadoCuentaTable({ movimientos }: Props) {
                 <button
                   type="button"
                   onClick={() => toggleSort("mov")}
-                  className="inline-flex items-center gap-1 hover:text-white/80"
+                  className="ico-hit inline-flex items-center gap-1 hover:text-white/80"
                 >
                   Fecha Movimiento
                   <SortIcon active={sortKey === "mov"} dir={sortDir} />
@@ -229,7 +229,7 @@ export default function EstadoCuentaTable({ movimientos }: Props) {
                 <button
                   type="button"
                   onClick={() => toggleSort("venc")}
-                  className="inline-flex items-center gap-1 hover:text-white/80"
+                  className="ico-hit inline-flex items-center gap-1 hover:text-white/80"
                 >
                   Fecha Vencimiento
                   <SortIcon active={sortKey === "venc"} dir={sortDir} />
@@ -279,7 +279,7 @@ export default function EstadoCuentaTable({ movimientos }: Props) {
                       href={m.linkPdf}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-brand-600 underline hover:text-brand-700"
+                      className="ico-hit inline-flex items-center gap-1 text-brand-600 underline hover:text-brand-700"
                     >
                       <PdfIcon />
                       {m.nrofor}
@@ -328,6 +328,7 @@ export default function EstadoCuentaTable({ movimientos }: Props) {
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   return (
     <svg
+      data-ico="sort"
       className={`transition-transform ${active ? "opacity-100" : "opacity-50"} ${
         active && dir === "desc" ? "rotate-180" : ""
       }`}
@@ -358,6 +359,7 @@ function PdfIcon() {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      data-ico="file"
       className="shrink-0"
     >
       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />

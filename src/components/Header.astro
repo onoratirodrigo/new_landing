@@ -26,10 +26,18 @@ function resolveHref(href: string) {
       ></span>
     </a>
 
-    <nav aria-label="Menú principal" class="hidden lg:flex items-center gap-1">
+    {/* La barrita que corre entre ítems vive dentro del <nav> y se posiciona
+        con offsetLeft/offsetWidth del link activo (ver el script). */}
+    <nav aria-label="Menú principal" class="header-nav hidden lg:flex items-center gap-1">
+      <span class="nav-indicator" aria-hidden="true"></span>
       {
         mainNav.map((item) => (
-          <a href={resolveHref(item.href)} class="header-link px-3 py-2 rounded-full text-sm font-medium transition-colors">
+          <a
+            href={resolveHref(item.href)}
+            data-nav-link
+            data-section={item.href.startsWith("#") ? item.href.slice(1) : undefined}
+            class="header-link relative px-3 py-2 rounded-full text-sm font-medium transition-colors"
+          >
             {item.label}
           </a>
         ))
@@ -52,7 +60,7 @@ function resolveHref(href: string) {
       aria-controls="mobile-nav"
       aria-expanded="false"
       aria-label="Abrir menú"
-      class="header-toggle lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors"
+      class="header-toggle ico-hit lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -65,10 +73,11 @@ function resolveHref(href: string) {
         width="20"
         height="20"
         aria-hidden="true"
+        data-ico="menu"
       >
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="6" x2="21" y2="6"></line>
-        <line x1="3" y1="18" x2="21" y2="18"></line>
+        <line x1="3" y1="12" x2="21" y2="12" data-ico-part="mid"></line>
+        <line x1="3" y1="6" x2="21" y2="6" data-ico-part="top"></line>
+        <line x1="3" y1="18" x2="21" y2="18" data-ico-part="bottom"></line>
       </svg>
     </button>
   </div>
@@ -78,7 +87,12 @@ function resolveHref(href: string) {
     <div class="container-x py-4 flex flex-col gap-1">
       {
         mainNav.map((item) => (
-          <a href={resolveHref(item.href)} class="px-3 py-3 rounded-lg text-base font-medium text-ink-700 hover:bg-brand-50 hover:text-brand-600 transition-colors">
+          <a
+            href={resolveHref(item.href)}
+            data-nav-link
+            data-section={item.href.startsWith("#") ? item.href.slice(1) : undefined}
+            class="mobile-nav-link px-3 py-3 rounded-lg text-base font-medium text-ink-700 hover:bg-brand-50 hover:text-brand-600 transition-colors"
+          >
             {item.label}
           </a>
         ))
@@ -212,6 +226,126 @@ function resolveHref(href: string) {
   if (canRunScrollGradient) {
     applyScrollGradient();
     window.addEventListener("scroll", onScrollGradient, { passive: true });
+  }
+
+  // =========================================================
+  // Indicador del navbar: barrita que se desliza al ítem de la sección en la
+  // que está parado el scroll (y al que se clickea), con un pelín de rebote.
+  //
+  // Se calcula con offsetLeft/offsetWidth en vez de un layout animado porque
+  // los links son inline-flex de ancho variable: medir es lo único que
+  // sobrevive a cambios de copy, de fuente y de zoom.
+  // =========================================================
+  const nav = document.querySelector<HTMLElement>(".header-nav");
+  const indicator = nav?.querySelector<HTMLElement>(".nav-indicator") ?? null;
+  const navLinks = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>("a[data-nav-link]")
+  );
+  const desktopLinks = navLinks.filter((a) => a.closest(".header-nav"));
+
+  // Las secciones que el indicador puede seguir, en el orden en que aparecen
+  // en la página (no en el que están en el menú, por las dudas).
+  const sections = navLinks
+    .map((a) => a.dataset.section)
+    .filter((id, i, arr): id is string => Boolean(id) && arr.indexOf(id) === i)
+    .map((id) => ({ id, el: document.getElementById(id) }))
+    .filter((s): s is { id: string; el: HTMLElement } => s.el !== null)
+    .sort(
+      (a, b) =>
+        a.el.getBoundingClientRect().top - b.el.getBoundingClientRect().top
+    );
+
+  // Cuánto se mete la barrita para adentro de cada link: los links tienen
+  // px-3 (12px), así que con este inset la barra mide exactamente el texto.
+  const INDICATOR_INSET = 12;
+  let activeSection: string | null = null;
+
+  function placeIndicator(link: HTMLElement | null) {
+    if (!indicator) return;
+    if (!link) {
+      indicator.classList.remove("is-visible");
+      return;
+    }
+    const width = Math.max(0, link.offsetWidth - INDICATOR_INSET * 2);
+    indicator.style.width = `${width}px`;
+    indicator.style.transform = `translateX(${link.offsetLeft + INDICATOR_INSET}px)`;
+    // La primera vez aparece sin animar el desplazamiento: si no, la barra
+    // entra volando desde el borde izquierdo del menú.
+    if (!indicator.classList.contains("is-visible")) {
+      indicator.classList.add("is-placed");
+      requestAnimationFrame(() => indicator.classList.add("is-visible"));
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => indicator.classList.remove("is-placed"))
+      );
+    }
+  }
+
+  function activeLink() {
+    return desktopLinks.find((a) => a.dataset.section === activeSection) ?? null;
+  }
+
+  function setActiveSection(id: string | null) {
+    if (id === activeSection) return;
+    activeSection = id;
+    navLinks.forEach((a) => {
+      const on = Boolean(id) && a.dataset.section === id;
+      a.classList.toggle("is-active", on);
+      if (on) a.setAttribute("aria-current", "true");
+      else a.removeAttribute("aria-current");
+    });
+    placeIndicator(activeLink());
+  }
+
+  function sectionInView(): string | null {
+    if (sections.length === 0) return null;
+    // La línea de prueba va justo debajo del header fijo: la sección activa es
+    // la última que ya la cruzó. Se mide con getBoundingClientRect y no con
+    // offsetTop porque las secciones cuelgan del wrapper del ShimmerGrid y
+    // offsetTop es relativo al offsetParent, no al documento.
+    const probe = (header?.offsetHeight ?? 0) + 24;
+    let current: string | null = null;
+    for (const s of sections) {
+      if (s.el.getBoundingClientRect().top <= probe) current = s.id;
+    }
+    // Al fondo de la página la última sección puede no llegar a cruzar el
+    // punto de prueba (si es más corta que el viewport): se fuerza igual.
+    const atBottom =
+      window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - 4;
+    if (atBottom) current = sections[sections.length - 1].id;
+    return current;
+  }
+
+  if (nav && indicator && sections.length > 0) {
+    let navTicking = false;
+    const syncNav = () => {
+      if (navTicking) return;
+      navTicking = true;
+      requestAnimationFrame(() => {
+        setActiveSection(sectionInView());
+        navTicking = false;
+      });
+    };
+
+    syncNav();
+    window.addEventListener("scroll", syncNav, { passive: true });
+
+    // Al clickear, el indicador salta ya mismo en vez de esperar a que el
+    // scroll suave llegue: si no, el click se siente sin respuesta.
+    desktopLinks.forEach((a) => {
+      a.addEventListener("click", () => {
+        if (a.dataset.section) setActiveSection(a.dataset.section);
+      });
+    });
+
+    // El ancho de los links cambia con el viewport (y con la fuente cuando
+    // termina de cargar), así que la barra se vuelve a medir.
+    const remeasure = () => placeIndicator(activeLink());
+    new ResizeObserver(remeasure).observe(nav);
+    window.addEventListener("resize", remeasure);
+    if ("fonts" in document) {
+      (document as any).fonts.ready.then(remeasure);
+    }
   }
 
   // Toggle del menú mobile

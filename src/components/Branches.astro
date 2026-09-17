@@ -1,11 +1,11 @@
 ---
 import { branches } from "../data/branches";
 import { site } from "../data/site";
-import BranchExplorer from "./BranchExplorer.tsx";
+import BranchesViews from "./BranchesViews.tsx";
 ---
 
-<section id="sucursales" class="py-20 md:py-28 bg-brand-600">
+<section id="sucursales" class="py-20 md:py-28 bg-brand-600 overflow-clip">
   <div class="container-x relative z-10">
-    <BranchExplorer client:load branches={branches} defaultMapUrl={site.mapUrl} />
+    <BranchesViews client:load branches={branches} defaultMapUrl={site.mapUrl} />
   </div>
 </section>

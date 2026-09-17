@@ -11,6 +11,18 @@ export type Branch = {
   mapEmbed: string;
   /** Posición del pin sobre la imagen del mapa de Argentina (porcentajes 0-100). */
   mapPosition: { x: number; y: number };
+  /** Silueta de fondo de la card: qué provincia dibujar (clave de
+   *  provinceShapes) y dónde cae la ciudad adentro de esa silueta, en el
+   *  mismo viewBox de 0-100. El pin no es decorativo: dos sucursales
+   *  comparten Buenos Aires y otras dos comparten Santa Fe, así que es lo
+   *  único que diferencia esas cards entre sí. */
+  province: { shape: string; pin: { x: number; y: number } };
+  /** Posición de la ciudad sobre la silueta del país (argentinaMap.ts), en
+   *  las unidades de ESE viewBox: 0-46.54 de ancho, 0-100 de alto. Es el
+   *  tercer encuadre en el que cae la misma ciudad —el mapa de Sucursales,
+   *  la provincia de la card y el país entero en Nosotros— y cada uno tiene
+   *  su propia caja, así que ninguno se deriva de otro. */
+  countryPin: { x: number; y: number };
 };
 
 // Datos de los puntos logísticos de Etman (fuente: etman.com.ar/puntos-de-venta).
@@ -27,6 +39,8 @@ export const branches: Branch[] = [
     mapEmbed:
       "https://maps.google.com/maps?q=Gral.%20Mart%C3%ADn%20de%20Gainza%202060%2C%20B1664%20Trujui%2C%20Provincia%20de%20Buenos%20Aires&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 49.8, y: 36.3 },
+    province: { shape: "buenos-aires", pin: { x: 62.68, y: 17.64 } },
+    countryPin: { x: 34.86, y: 38.66 },
   },
   {
     id: "bahia-blanca",
@@ -44,6 +58,8 @@ export const branches: Branch[] = [
     mapEmbed:
       "https://maps.google.com/maps?q=Israel%2034%20Bah%C3%ADa%20Blanca%20Buenos%20Aires&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 56.5, y: 48.1 },
+    province: { shape: "buenos-aires", pin: { x: 27.03, y: 70.16 } },
+    countryPin: { x: 26.67, y: 50.91 },
   },
   {
     id: "cordoba",
@@ -60,6 +76,8 @@ export const branches: Branch[] = [
     mapEmbed:
       "https://maps.google.com/maps?q=Av.%20Gdor.%20Sabattini%203030%20cordoba&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 37.8, y: 38.9 },
+    province: { shape: "cordoba", pin: { x: 43.52, y: 35.78 } },
+    countryPin: { x: 22.13, y: 28.94 },
   },
   {
     id: "rosario",
@@ -76,6 +94,8 @@ export const branches: Branch[] = [
     mapEmbed:
       "https://maps.google.com/maps?q=9%20de%20Julio%202361%20rosario&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 44.0, y: 34.5 },
+    province: { shape: "santa-fe", pin: { x: 52.66, y: 77.56 } },
+    countryPin: { x: 30.48, y: 33.53 },
   },
   {
     id: "rafaela",
@@ -92,6 +112,8 @@ export const branches: Branch[] = [
     mapEmbed:
       "https://maps.google.com/maps?q=Bvar.%20Lehmann%201687%20santa%20fe&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 34.3, y: 23.8 },
+    province: { shape: "santa-fe", pin: { x: 41.59, y: 50.93 } },
+    countryPin: { x: 28.51, y: 28.43 },
   },
   {
     id: "parana",
@@ -108,6 +130,8 @@ export const branches: Branch[] = [
     mapEmbed:
       "https://maps.google.com/maps?q=Av.%20Ramirez%204753%20Paran%C3%A1%20Entre%20R%C3%ADos&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 40.3, y: 27.6 },
+    province: { shape: "entre-rios", pin: { x: 22.98, y: 40.48 } },
+    countryPin: { x: 30.75, y: 29.89 },
   },
   {
     id: "mendoza",
@@ -124,5 +148,7 @@ export const branches: Branch[] = [
     mapEmbed:
       "https://maps.google.com/maps?q=pasteur%20897%20guaymallen%20mendoza&t=m&z=15&output=embed&iwloc=near",
     mapPosition: { x: 30.7, y: 51.2 },
+    province: { shape: "mendoza", pin: { x: 46.46, y: 16.68 } },
+    countryPin: { x: 11.29, y: 33.37 },
   },
 ];

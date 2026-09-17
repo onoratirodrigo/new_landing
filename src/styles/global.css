@@ -218,6 +218,267 @@ body {
   border-color: #fff;
 }
 
+/* Botón de placa: el mismo material que .plate, en formato botón.
+   Sobre un fondo de marca, un botón blanco es el objeto más claro de la
+   pantalla y se lee como un parche pegado encima; la placa hace lo
+   contrario —se hunde con brand-800 y se despega con sombra, no con
+   brillo—, que es lo que ya hacen las cards de Nosotros, las fichas de
+   Sucursales y los chips de Etman Market. El único blanco que queda es
+   el del texto y el hilo del borde. */
+.btn-plate {
+  background: rgb(var(--brand-800));
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 10px 22px rgb(var(--brand-900) / 0.3),
+    0 28px 60px -22px rgb(var(--brand-900) / 0.5);
+}
+.btn-plate:hover {
+  background: rgb(var(--brand-900));
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 14px 26px rgb(var(--brand-900) / 0.36),
+    0 36px 70px -22px rgb(var(--brand-900) / 0.58);
+}
+/* Por outline y no con ring-*: el relieve vive en box-shadow. */
+.btn-plate:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 3px;
+}
+
+/* =========================================================
+   Campos de formulario sobre placa
+   =========================================================
+   Acá vivía la receta de vidrio (velo blanco + blur + bisel + grano) que
+   usaban los atajos de Nosotros, las sucursales y el formulario. Se fue
+   entera, y el motivo vale la pena dejarlo escrito para que nadie la
+   reponga: un vidrio se reconoce por lo que le hace a lo que tiene detrás
+   —lo desenfoca, lo corre, lo concentra en el canto— y detrás de la franja
+   Nosotros -> Contacto no hay más que un plano de color liso y los puntitos
+   del shimmer. El blur devolvía el mismo plano, así que todo el trabajo lo
+   terminaba haciendo el velo blanco: se leía translúcido, nunca vítreo, y
+   encima bajaba el contraste del texto. La franja entera pasó a placas
+   oscuras (ver el bloque de abajo).
+
+   El campo no puede ser blanco sólido (rompe la placa) ni transparente puro
+   (deja de leerse como campo): va un escalón MÁS oscuro que la placa que lo
+   contiene, que es como se resuelve la jerarquía cuando el contenedor ya es
+   oscuro. */
+.plate-field {
+  width: 100%;
+  border-radius: 0.75rem;
+  background: rgb(var(--brand-900) / 0.55);
+  border: 1px solid rgb(255 255 255 / 0.18);
+  color: #fff;
+  padding: 0.75rem 1rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.plate-field::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+.plate-field:hover {
+  border-color: rgba(255, 255, 255, 0.32);
+}
+.plate-field:focus {
+  outline: none;
+  background: rgb(var(--brand-900) / 0.75);
+  border-color: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.14);
+}
+/* El menú desplegable del <select> lo pinta el sistema operativo, no esta
+   hoja: sin esto las opciones salen blanco sobre blanco en Windows. */
+.plate-field option {
+  color: var(--ink-900);
+  background: #fff;
+}
+
+/* =========================================================
+   Placas
+   =========================================================
+   El material de TODO objeto que viva sobre la franja de marca: los dos
+   atajos de Nosotros, las siete sucursales, la ficha que se abre desde el
+   mapa, el formulario de Contacto y los controles de Etman Market (que
+   define sus propios tokens a partir de las mismas variables).
+
+   La regla, para no volver a tener tres materiales conviviendo: dentro de
+   la franja todo objeto es una placa oscura, y el blanco se reserva para
+   el texto, los iconos y un único acento por sección.
+
+   La placa hunde con brand-800 en vez de aclarar con blanco: en vez de aclarar con blanco, hunde con
+   brand-800. Sobre el fondo de marca oscurecer separa MÁS que aclarar
+   —hay más recorrido de luminancia hacia abajo que hacia arriba—, el
+   texto blanco pasa AAA sin depender de ningún velo, y se pinta igual en
+   cualquier navegador: sin backdrop-filter el compositor deja de releer
+   en cada frame el canvas del shimmer, que es lo más caro que había acá.
+
+   El relieve sale de tres cosas, ninguna translúcida: el color, las
+   sombras y el dibujo. Las sombras van en brand-900 y no en negro, mismo
+   criterio que .about-photo (el negro sobre el fondo de marca se ve gris
+   sucio). */
+.plate {
+  position: relative;
+  /* El dibujo de la esquina asoma a propósito por fuera de la caja: el
+     recorte es lo que lo convierte en un fragmento de algo más grande en
+     vez de un ícono centrado. */
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: rgb(var(--brand-800));
+  box-shadow: 0 10px 22px rgb(var(--brand-900) / 0.3),
+    0 28px 60px -22px rgb(var(--brand-900) / 0.5);
+}
+
+/* El dibujo va absoluto detrás del contenido, así que los hijos directos
+   suben a z-index 1 o quedarían tapados por él. */
+.plate > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Panel grande (el formulario de Contacto). El radio no puede venir de una
+   utility de Tailwind: .plate declara border-radius y gana por orden. */
+.plate-panel {
+  border-radius: var(--radius-xl);
+}
+
+.plate-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.plate-hover:hover,
+.plate-hover:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 26px rgb(var(--brand-900) / 0.36),
+    0 36px 70px -22px rgb(var(--brand-900) / 0.58);
+}
+/* Por outline y no con las utilities ring-* de Tailwind: ring escribe
+   box-shadow, que es donde vive todo el relieve de la placa. */
+.plate-hover:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 3px;
+}
+
+/* Papel milimetrado. La grilla es de 22px y no de las 8 del sistema de
+   espaciado: a ese paso el patrón se lee como textura de fondo y no como
+   una grilla que quiera alinear el contenido que tiene encima. */
+.plate-grid {
+  background-image: linear-gradient(
+      rgb(255 255 255 / 0.045) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgb(255 255 255 / 0.045) 1px, transparent 1px);
+  background-size: 100% 22px, 22px 100%;
+}
+
+/* Capa de dibujo. currentColor y no un blanco fijo: el trazo hereda el
+   color del texto de la card, así que si algún día la placa cambia de
+   tono el dibujo lo acompaña solo. */
+.plate-art {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  color: #fff;
+}
+
+/* Mapa del país en la card de cobertura de Nosotros. Mismo material que la
+   silueta de provincia de las cards de Sucursales —trazo, no mancha— un
+   escalón más arriba: ahí cada card muestra su provincia, acá el país
+   entero con los siete puntos encima.
+
+   Se dimensiona SOLO por la altura: el viewBox viene ajustado al dibujo
+   (ver argentinaMap.ts), así que el ancho sale de la relación de aspecto y
+   el borde derecho del trazo queda donde dice right, sin aire fantasma en
+   el medio. Pasa del 100% y arranca arriba de todo, así que sangra sólo
+   por el pie: entero y encuadrado se lee como ícono, cortado contra el
+   borde se lee como territorio. Se corta por abajo y no por arriba porque
+   lo que el recorte se lleva tiene que ser la Patagonia —donde no hay
+   ningún punto que mostrar— y no el norte, que es la parte ancha y la que
+   vuelve reconocible la silueta.
+
+   La bajada de la card le pasa por encima, de ahí la opacidad baja: es
+   fondo, no ilustración. */
+.plate-art-map {
+  right: 1rem;
+  top: -6px;
+  height: 118%;
+  opacity: 0.45;
+  transition: opacity 0.25s ease;
+}
+.plate-art-map .shape {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 0.9;
+  stroke-linejoin: round;
+}
+/* Los puntos van llenos y con aro del color de la placa: Rafaela, Paraná y
+   Rosario caen a cinco píxeles entre sí y sin ese recorte el Litoral se ve
+   como una sola mancha. */
+.plate-art-map .pin {
+  fill: currentColor;
+  stroke: rgb(var(--brand-800));
+  stroke-width: 0.7;
+}
+.plate-hover:hover .plate-art-map,
+.plate-hover:focus-visible .plate-art-map {
+  opacity: 0.8;
+}
+
+/* Despiece de la esquina. Sale de la caja por abajo y a la derecha —el
+   lugar más lejano al texto, que siempre arranca arriba a la izquierda— y
+   va al 50% de opacidad: por encima de eso le pelea el ojo a la bajada. */
+.plate-art-part {
+  right: -18px;
+  bottom: -18px;
+  width: 132px;
+  opacity: 0.5;
+}
+
+/* Silueta de la provincia en las cards de sucursales. Va en trazo y no
+   rellena: son cards chicas y de dos en dos, y una mancha sólida al lado
+   del nombre compite con él. El trazo describe la misma forma sin pesar.
+
+   Sale por la derecha en vez de entrar entera: encuadrada se lee como un
+   ícono —y como ícono no se distingue una provincia de otra a 40px—,
+   cortada contra el borde se lee como territorio. */
+.plate-art-province {
+  right: -10px;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 120%;
+  opacity: 0.55;
+  transition: opacity 0.25s ease;
+}
+.plate-art-province .shape {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.2;
+  stroke-linejoin: round;
+}
+/* El punto de la ciudad sí va lleno: es el único dato que diferencia dos
+   cards de la misma provincia (AMBA / Bahía Blanca, Rosario / Rafaela). */
+.plate-art-province .pin {
+  fill: currentColor;
+}
+.plate-hover:hover .plate-art-province,
+.plate-hover:focus-visible .plate-art-province,
+.plate.is-active .plate-art-province {
+  opacity: 0.85;
+}
+
+/* Seleccionada: la sucursal abierta en el panel. Igual que en el vidrio, no
+   usa color de marca —sobre el fondo magenta no se distinguiría— sino un
+   escalón más de oscuridad y un hilo de luz alrededor. */
+.plate.is-active {
+  background: rgb(var(--brand-900));
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.45),
+    0 14px 26px rgb(var(--brand-900) / 0.4),
+    0 36px 70px -22px rgb(var(--brand-900) / 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .plate-hover:hover,
+  .plate-hover:focus-visible {
+    transform: none;
+  }
+}
+
 /* =========================================================
    Cards
    ========================================================= */
@@ -363,6 +624,60 @@ section[id] {
 .site-header .header-link:hover {
   color: var(--hdr-text-hover);
   background-color: var(--hdr-bg-hover);
+}
+
+.site-header .header-link.is-active {
+  color: var(--hdr-text-hover);
+  /* El delay deja que la barrita llegue antes de que el texto se encienda:
+     el color persigue al movimiento, no al revés. */
+  transition-delay: 140ms;
+}
+
+/* Barrita que corre entre ítems del menú (ver el script de Header.astro,
+   que le escribe width/translateX). */
+.header-nav {
+  position: relative;
+}
+
+.nav-indicator {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0;
+  border-radius: 999px;
+  color: var(--hdr-text-hover);
+  background-color: currentColor;
+  box-shadow: 0 0 10px color-mix(in srgb, currentColor 40%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  /* El cubic-bezier pasa de 1 y vuelve: es el rebotecito del final, el
+     equivalente al spring del ejemplo. */
+  transition: transform 520ms cubic-bezier(0.34, 1.28, 0.52, 1),
+    width 520ms cubic-bezier(0.34, 1.28, 0.52, 1), opacity 220ms ease,
+    color 300ms ease, box-shadow 300ms ease;
+}
+
+.nav-indicator.is-visible {
+  opacity: 1;
+}
+
+/* Primer posicionamiento: aparece donde va en vez de volar desde el borde
+   izquierdo del menú. */
+.nav-indicator.is-placed {
+  transition: opacity 220ms ease, color 300ms ease, box-shadow 300ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-indicator {
+    transition: opacity 220ms ease, color 300ms ease;
+  }
+}
+
+/* Item activo del menú mobile */
+.mobile-nav-link.is-active {
+  color: rgb(var(--brand-600));
+  background-color: rgb(var(--brand-50));
 }
 
 /* Botón hamburguesa */
@@ -655,46 +970,101 @@ section[id] {
    Animaciones del explorador de sucursales
    ========================================================= */
 
-/* Reveal circular desde el punto donde está la card hovereada.
-   El origin se inyecta en runtime via custom properties (--reveal-x / --reveal-y).
-   Animamos con `forwards` durante el reveal y al terminar el componente quita
-   la clase, así el contenido queda sin clip-path (no se corta cuando crece). */
-@keyframes branch-reveal {
-  from {
-    clip-path: circle(0% at var(--reveal-x, 50%) var(--reveal-y, 50%));
-    opacity: 0.85;
-  }
-  to {
-    clip-path: circle(260% at var(--reveal-x, 50%) var(--reveal-y, 50%));
-    opacity: 1;
-  }
+/* El panel no tiene caja: el mapa flota sobre la franja y la única caja de
+   la sección aparece cuando se abre una sucursal. Antes acá había un panel
+   blanco con borde y sombra, que cortaba la franja de marca en dos.
+
+   min-height sostiene el alto cuando la ficha (que es absoluta) es más alta
+   que el mapa. */
+.branch-panel {
+  position: relative;
+  min-height: 520px;
 }
 
-/* Vista por defecto (mapa institucional) — fade suave */
-@keyframes branch-default-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+/* El recorte vive en su propia capa y sólo hace falta mientras el mapa
+   crece. Recortar el panel entero era lo que dibujaba una caja invisible
+   alrededor del mapa: la sombra del dibujo se cortaba contra una línea recta
+   y delataba el borde. En reposo el mapa no llega a los bordes, así que no
+   se ve ningún corte; durante el zoom entra una máscara que desvanece los
+   cuatro lados y el mapa se disuelve en vez de cortarse.
+
+   El desvanecido arranca al 3%: Jujuy es la punta más a la izquierda del
+   dibujo y con una máscara más ancha le llegaba el borde. */
+.branch-map-clip {
+  position: relative;
+  overflow: hidden;
+}
+.branch-panel.is-zooming .branch-map-clip {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent),
+    linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 3%, #000 97%, transparent),
+    linear-gradient(to bottom, transparent, #000 3%, #000 97%, transparent);
+  mask-composite: intersect;
 }
 
-.branch-anim-reveal {
-  animation: branch-reveal 1100ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
-  /* Durante la animación, ocultamos overflow para evitar artefactos del clip */
-  will-change: clip-path, opacity;
+/* El origen del zoom es el punto de la sucursal, que el componente escribe
+   en --pin-x / --pin-y antes de arrancar. */
+.branch-map {
+  position: relative;
+  padding: 16px 26px;
+  transform-origin: var(--pin-x, 50%) var(--pin-y, 50%);
+  will-change: transform, opacity, filter;
+}
+/* Sin sombra proyectada: el PNG ya trae la suya horneada, y una segunda
+   hecha por CSS era la que se cortaba contra el borde. */
+.branch-map img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
-.branch-anim-default {
-  animation: branch-default-in 450ms ease-out both;
+/* Los otros seis puntos se corren del camino mientras uno se abre: la
+   atención se va al que crece antes de que empiece a crecer. */
+.branch-map.is-focusing .branch-pin:not(.is-active) {
+  opacity: 0.12;
+  transform: translate(-50%, -50%) scale(0.6);
 }
 
-/* Reducir animaciones para usuarios con preferencia */
+/* La ficha: el punto agrandado. El fondo es el mismo brand-800 del punto y
+   de las cards, así que el crecimiento no tiene salto de color.
+   Sin box-shadow: la sombra la pone el componente con drop-shadow, que es lo
+   único que sigue a la forma recortada (clip-path recorta al elemento Y a su
+   box-shadow, así que con box-shadow aparecía de golpe al final). */
+.branch-sheet {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  overflow: hidden;
+  background: rgb(var(--brand-800));
+  z-index: 5;
+  will-change: clip-path, filter;
+}
+.branch-sheet-body {
+  transition: opacity 140ms ease;
+}
+/* Cambiar de sucursal con la ficha ya abierta no rehace el morph —el punto
+   de la nueva está tapado— así que sólo se cruza el contenido. */
+.branch-sheet-body.is-swapping {
+  opacity: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .branch-anim-reveal,
-  .branch-anim-default {
+  .branch-map,
+  .branch-sheet,
+  .branch-sheet-body {
     animation: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  /* Sin animación no hay drop-shadow que la acompañe, así que acá —y sólo
+     acá— la sombra vuelve a ser un box-shadow estático. */
+  .branch-sheet {
+    box-shadow: 0 16px 30px rgb(var(--brand-900) / 0.4),
+      0 40px 80px -26px rgb(var(--brand-900) / 0.6);
   }
 }
 
@@ -714,27 +1084,36 @@ section[id] {
   outline: none;
 }
 .branch-pin:focus-visible {
-  outline: 2px solid rgb(var(--brand-500));
+  outline: 2px solid #fff;
   outline-offset: 6px;
   border-radius: 50%;
 }
+.branch-pin {
+  transition: opacity 260ms ease, transform 260ms ease;
+}
 
+/* El punto es del color de la placa, igual que las cards y que la ficha.
+   No es una coincidencia estética: la ficha arranca su crecimiento con este
+   mismo color, así que el punto tiene que ser el color de la card o el
+   arranque del morph se ve como un salto.
+   El magenta anterior tampoco servía sobre un mapa magenta. */
 .branch-pin-dot {
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: rgb(var(--brand-500));
-  border: 3px solid #ffffff;
-  box-shadow: 0 1px 2px rgba(14, 14, 15, 0.18),
-    0 0 0 1px rgb(var(--brand-700) / 0.25);
-  transition: transform 200ms ease-out, background-color 200ms ease-out;
+  box-sizing: border-box;
+  background: rgb(var(--brand-800));
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 2px 5px rgb(var(--brand-900) / 0.55);
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 200ms ease-out;
 }
 
 .branch-pin-pulse {
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  border: 2px solid rgb(var(--brand-500));
+  border: 2px solid #fff;
   opacity: 0;
   animation: branch-pin-pulse 2.2s ease-out infinite;
   pointer-events: none;
@@ -744,8 +1123,7 @@ section[id] {
 .branch-pin:hover .branch-pin-dot,
 .branch-pin:focus-visible .branch-pin-dot,
 .branch-pin.is-active .branch-pin-dot {
-  transform: scale(1.35);
-  background: rgb(var(--brand-700));
+  transform: scale(1.5);
 }
 
 /* Tooltip con el nombre de la ciudad */
@@ -806,5 +1184,796 @@ section[id] {
   }
   .branch-pin-dot {
     transition: none;
+  }
+}
+
+/* =========================================================
+   Íconos — microinteracciones
+   =========================================================
+   Un ícono que sólo cambia de color al pasarle el mouse no dice nada; uno
+   que ejecuta su propio mecanismo sí. El pin se clava, el teléfono suena,
+   la solapa del sobre se abre, el obturador de la cámara enfoca.
+
+   Por eso la animación se elige por lo que el ícono ES (data-ico) y no por
+   dónde está: el mismo dibujo significa lo mismo en el footer, en las
+   sucursales y en el formulario. Agregar un ícono nuevo es ponerle su
+   data-ico, no escribir otra animación.
+
+   El disparador es el ancestro con .ico-hit — la fila, el link o el botón
+   entero, no el <svg>. Así el movimiento arranca cuando el mouse entra al
+   área que la persona percibe como "el elemento" y no recién cuando toca
+   los 16px del dibujo.
+
+   Ninguna regla de acá toca colores ni fondos: eso lo sigue manejando cada
+   componente donde ya lo tenía.
+
+   Sobre transform-origin: en un <svg> el transform usa la caja CSS como
+   cualquier elemento, así que "center" o "bottom" alcanzan. En las PARTES
+   de adentro (una línea, la solapa, el triángulo) hace falta declarar
+   transform-box: las coordenadas del viewBox con view-box cuando el pivote
+   es un punto concreto del dibujo, o fill-box cuando alcanza con el centro
+   de la propia forma. */
+
+/* --- Los que se sostienen mientras dura el hover ------------------- */
+
+/* La flecha de "seguir" avanza y se queda: es dirección, no un gesto. */
+[data-ico="arrow"] {
+  transition: transform 0.3s cubic-bezier(0.2, 0.7, 0, 1);
+}
+.ico-hit:hover [data-ico="arrow"] {
+  transform: translateX(4px);
+}
+
+[data-ico^="chevron"] {
+  transition: transform 0.25s cubic-bezier(0.2, 0.7, 0, 1);
+}
+.ico-hit:hover [data-ico="chevron-left"] {
+  transform: translateX(-3px);
+}
+.ico-hit:hover [data-ico="chevron-right"] {
+  transform: translateX(3px);
+}
+
+/* El menú se abre antes de abrirse: las líneas se separan y la del medio
+   se acorta, que es la forma de anticipar que ahí hay algo que despliega. */
+[data-ico="menu"] [data-ico-part] {
+  transform-box: view-box;
+  transform-origin: 12px 12px;
+  transition: transform 0.28s cubic-bezier(0.2, 0.7, 0, 1);
+}
+.ico-hit:hover [data-ico="menu"] [data-ico-part="top"] {
+  transform: translateY(-2px);
+}
+.ico-hit:hover [data-ico="menu"] [data-ico-part="mid"] {
+  transform: scaleX(0.55);
+}
+.ico-hit:hover [data-ico="menu"] [data-ico-part="bottom"] {
+  transform: translateY(2px);
+}
+
+/* El documento se levanta apenas, como para tomarlo. */
+[data-ico="file"] {
+  transition: transform 0.28s cubic-bezier(0.2, 0.7, 0, 1);
+}
+.ico-hit:hover [data-ico="file"] {
+  transform: translateY(-2px) rotate(-6deg);
+}
+
+/* El de ordenar usa translate y no transform a propósito: la tabla le
+   aplica rotate-180 con una utility de Tailwind cuando el orden es
+   descendente, y un transform propio acá se la pisaría. Las propiedades
+   independientes se componen en vez de competir. */
+[data-ico="sort"] {
+  transition: translate 0.2s ease;
+}
+.ico-hit:hover [data-ico="sort"] {
+  translate: 0 -2px;
+}
+
+/* --- Los que ejecutan un gesto de una sola vez --------------------- */
+
+@keyframes ico-plant {
+  0% { transform: translateY(-5px) scaleY(1); }
+  55% { transform: translateY(0.6px) scaleY(0.88); }
+  78% { transform: translateY(0) scaleY(1.05); }
+  100% { transform: translateY(0) scaleY(1); }
+}
+@keyframes ico-ring {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-15deg); }
+  45% { transform: rotate(12deg); }
+  70% { transform: rotate(-7deg); }
+}
+@keyframes ico-flap {
+  0%, 100% { transform: scaleY(1); }
+  45% { transform: scaleY(0.1); }
+}
+@keyframes ico-aperture {
+  0%, 100% { transform: scale(1); }
+  45% { transform: scale(0.7); }
+}
+@keyframes ico-pop {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-3px) scale(1.1); }
+}
+@keyframes ico-hop {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-3px); }
+}
+@keyframes ico-play {
+  0%, 100% { transform: translateX(0) scale(1); }
+  45% { transform: translateX(1.4px) scale(1.18); }
+}
+
+/* El pin cae y se clava: pivote en la punta, que es donde apoya. */
+[data-ico="pin"] {
+  transform-origin: bottom center;
+}
+.ico-hit:hover [data-ico="pin"] {
+  animation: ico-plant 0.6s cubic-bezier(0.3, 0.9, 0.4, 1);
+}
+
+.ico-hit:hover [data-ico="phone"] {
+  animation: ico-ring 0.6s ease-in-out;
+}
+
+/* Sólo la solapa, achatándose contra el borde de arriba del sobre. */
+[data-ico="mail"] [data-ico-part="flap"] {
+  transform-box: view-box;
+  transform-origin: 12px 6px;
+}
+.ico-hit:hover [data-ico="mail"] [data-ico-part="flap"] {
+  animation: ico-flap 0.55s ease-in-out;
+}
+
+[data-ico="instagram"] [data-ico-part="lens"] {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.ico-hit:hover [data-ico="instagram"] [data-ico-part="lens"] {
+  animation: ico-aperture 0.5s ease-in-out;
+}
+
+.ico-hit:hover [data-ico="facebook"] {
+  animation: ico-pop 0.5s cubic-bezier(0.3, 0.9, 0.4, 1);
+}
+
+/* El punto de la "i" salta y el resto queda quieto. */
+[data-ico="linkedin"] [data-ico-part="dot"] {
+  transform-box: view-box;
+  transform-origin: 4px 4px;
+}
+.ico-hit:hover [data-ico="linkedin"] [data-ico-part="dot"] {
+  animation: ico-hop 0.45s cubic-bezier(0.3, 0.9, 0.4, 1);
+}
+
+[data-ico="youtube"] [data-ico-part="play"] {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.ico-hit:hover [data-ico="youtube"] [data-ico-part="play"] {
+  animation: ico-play 0.45s cubic-bezier(0.3, 0.9, 0.4, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ico],
+  [data-ico] [data-ico-part] {
+    transition: none !important;
+  }
+  .ico-hit:hover [data-ico],
+  .ico-hit:hover [data-ico] [data-ico-part] {
+    animation: none !important;
+    transform: none !important;
+    translate: none !important;
+  }
+}
+
+/* =========================================================
+   Sucursales: las dos maquetas sobre un cubo que rota
+   ========================================================= */
+/* La profundidad del cubo tiene que seguir a la altura de la cara que se está
+   abriendo, y las dos vistas no miden lo mismo. Registrar --h como longitud es
+   lo que permite que interpole: sin @property el translateZ saltaría al valor
+   nuevo en el primer cuadro mientras el alto todavía viaja, y el cubo se
+   abriría por la arista. Ver BranchesViews.tsx. */
+@property --h {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+.branch-views {
+  --turn: 620ms;
+  --turn-ease: cubic-bezier(0.72, 0.02, 0.24, 1);
+}
+
+.cube-scene {
+  /* Atada al alto para que el escorzo se sienta igual midan lo que midan las
+     dos vistas. */
+  perspective: calc(var(--h) * 3);
+  height: var(--h);
+  transition: --h var(--turn) var(--turn-ease);
+}
+
+.cube {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  /* El pivote va MEDIA ALTURA ATRAS, no en el plano de la cara. Con el cubo
+     centrado en z=0 la cara frontal queda empujada media altura hacia el ojo
+     y la perspectiva la agranda un 13%: el contenido se desbordaba del
+     container. Con el eje corrido, la cara frontal descansa en z=0 —escala
+     exacta, sin remuestreo del texto— y el escorzo aparece sólo durante el
+     giro, que es donde tiene que estar. */
+  transform-origin: 50% 50% calc(var(--h) / -2);
+  transform: rotateX(0deg);
+  transition: transform var(--turn) var(--turn-ease);
+}
+.cube[data-face="1"] {
+  transform: rotateX(90deg);
+}
+
+.cube-face {
+  position: absolute;
+  inset: 0;
+  opacity: 1;
+  transition: opacity 160ms linear;
+}
+/* La cara que se va se apaga sobre el final del giro, cuando ya está casi de
+   canto: así no queda el hilo de un píxel que dejan los 90 grados exactos. */
+.cube-face.is-back {
+  opacity: 0;
+  transition: opacity 160ms linear calc(var(--turn) - 180ms);
+}
+
+.cube-face-front {
+  transform: none;
+}
+/* La cara de abajo: horizontal, apoyada en el borde inferior del cubo. Su
+   rotateX(-90deg) es el que CANCELA el +90deg del cubo: sin ese signo la cara
+   llega derecha pero con el contenido cabeza abajo. */
+.cube-face-bottom {
+  transform: translateY(calc(var(--h) / 2)) translateZ(calc(var(--h) / -2))
+    rotateX(-90deg);
+}
+
+.cube-face-inner {
+  width: 100%;
+}
+
+/* Los dos botones, centrados debajo de la sección. */
+.view-switch {
+  /* La cara del cubo lleva transform, así que arma contexto de apilado y pinta
+     por encima del contenido en flujo. Sin posicionar, los botones quedaban
+     tapados apenas una cara se desbordaba. */
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: clamp(28px, 4vw, 48px);
+}
+
+.view-switch-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: transparent;
+  color: #fff;
+  font-family: theme("fontFamily.display");
+  font-weight: 700;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition: background 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+.view-switch-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.75);
+}
+.view-switch-btn:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+.view-switch-btn.is-active {
+  background: #fff;
+  border-color: #fff;
+  color: rgb(var(--brand-700));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cube,
+  .cube-scene,
+  .cube-face {
+    transition-duration: 1ms !important;
+  }
+}
+
+/* =========================================================
+   Sucursales, vista 2: los tajos superpuestos
+   ========================================================= */
+.branch-slices {
+  --tracks: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+  --edge: 6px;
+  --slice-ease: cubic-bezier(0.16, 0.84, 0.3, 1);
+  --slice-speed: 560ms;
+
+  display: grid;
+  grid-template-columns: var(--tracks);
+  aspect-ratio: 2.35 / 1;
+  min-height: 430px;
+  max-height: 660px;
+  transition: grid-template-columns var(--slice-speed) var(--slice-ease);
+}
+
+.slice {
+  position: relative;
+  grid-row: 1;
+  grid-column: var(--c);
+  overflow: hidden;
+  background: rgb(var(--brand-900));
+  border: var(--edge) solid rgb(var(--brand-600));
+  /* La muesca deja ver el tajo de atrás. corner-shape la dibuja recta en
+     Chrome 139+; donde no está soportada queda curva y el apilado se lee
+     igual. */
+  border-radius: 0 0 0 22% / 0 0 0 44%;
+  corner-shape: notch;
+  /* Sobre el magenta de la sección el borde ya separa, pero contra las fotos
+     —oscuras y del mismo palo de color— el corte desaparecía. El filete claro
+     por dentro es lo que hace legible el escalón de la muesca. */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+  transition: border-radius var(--slice-speed) var(--slice-ease);
+}
+.slice:first-child {
+  border-radius: 0;
+}
+/* Al abierto se le saca la muesca, y al siguiente también: su corte entraría
+   sobre la ficha. */
+.slice.is-open,
+.slice.is-after {
+  border-radius: 0;
+}
+
+/* La foto manda: se la baja de brillo lo justo para que el texto lea, no se la
+   lava de rosa. Con el velo fuerte las siete sucursales se veían iguales. */
+.slice-photo {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: max(100%, 640px);
+  background-size: cover;
+  filter: saturate(0.9) contrast(1.04) brightness(0.72);
+  transform: scale(1.04);
+  transition: filter var(--slice-speed) var(--slice-ease),
+    transform 900ms var(--slice-ease);
+}
+.slice.is-open .slice-photo {
+  filter: saturate(1.02) contrast(1.02) brightness(1);
+  transform: scale(1);
+}
+
+.slice-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+      to top,
+      rgba(38, 4, 16, 0.9) 0%,
+      rgba(38, 4, 16, 0.4) 46%,
+      rgba(38, 4, 16, 0) 82%
+    ),
+    linear-gradient(to right, rgba(38, 4, 16, 0.62) 0%, rgba(38, 4, 16, 0) 62%);
+}
+
+.slice-wash {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    170deg,
+    rgba(176, 18, 74, 0.26),
+    rgba(58, 6, 25, 0.66)
+  );
+  opacity: 1;
+  transition: opacity var(--slice-speed) var(--slice-ease);
+}
+.slice.is-open .slice-wash {
+  opacity: 0;
+}
+
+/* Filete superior: el tono agrupa por provincia, así las dos bonaerenses y las
+   dos santafesinas se leen como pares. */
+.slice-rule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--pv);
+}
+
+.slice-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  appearance: none;
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.slice-hit:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: -9px;
+}
+
+/* El nombre va arriba a la izquierda porque la muesca se come la mitad
+   inferior de ese borde. */
+.slice-tab {
+  position: absolute;
+  top: clamp(18px, 2.2vw, 26px);
+  left: clamp(14px, 1.6vw, 20px);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  writing-mode: vertical-rl;
+  font-family: theme("fontFamily.display");
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: clamp(1rem, 1.3vw, 1.28rem);
+  color: #fff;
+  max-height: 56%;
+  text-shadow: 0 2px 16px rgba(38, 4, 16, 0.8);
+  transition: opacity 260ms var(--slice-ease),
+    transform var(--slice-speed) var(--slice-ease);
+}
+.slice-tab-prov {
+  writing-mode: vertical-rl;
+  font-weight: 600;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pv);
+}
+.slice.is-open .slice-tab {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+/* La silueta de la provincia con el pin real de la ciudad: lo mismo que dibuja
+   .plate-art-province en la vista 1, y lo único que separa AMBA de Bahía
+   Blanca o Rosario de Rafaela. */
+.slice-crest svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.slice-crest .shape {
+  fill: rgba(255, 255, 255, 0.09);
+  stroke: rgba(255, 255, 255, 0.62);
+  stroke-width: 2.4;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.slice-crest .halo {
+  fill: var(--pv);
+  opacity: 0.42;
+}
+.slice-crest .pin {
+  fill: #fff;
+  stroke: var(--pv);
+  stroke-width: 1.6;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Cerrado: en el hueco estático de abajo, corrido lo justo para esquivar la
+   muesca (por eso el 22%, el mismo del border-radius). */
+.slice-crest-mini {
+  position: absolute;
+  bottom: 14px;
+  left: calc(22% + 9px);
+  width: clamp(38px, 3.6vw, 54px);
+  aspect-ratio: 1;
+  opacity: 1;
+  transition: opacity 240ms var(--slice-ease);
+}
+.slice.is-open .slice-crest-mini {
+  opacity: 0;
+}
+
+/* Abierto: la misma silueta en grande, de marca de agua. */
+.slice-crest-big {
+  position: absolute;
+  top: clamp(20px, 2.8vw, 40px);
+  right: clamp(18px, 2.4vw, 36px);
+  width: clamp(96px, 13vw, 196px);
+  aspect-ratio: 1;
+  opacity: 0;
+  transition: opacity 340ms var(--slice-ease);
+}
+.slice.is-open .slice-crest-big {
+  opacity: 1;
+  transition-delay: 200ms;
+}
+.slice-crest-big .shape {
+  stroke-width: 2;
+  stroke: rgba(255, 255, 255, 0.5);
+  fill: rgba(255, 255, 255, 0.06);
+}
+.slice-crest-big .halo {
+  opacity: 0.55;
+}
+
+.slice-card {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: clamp(18px, 2.2vw, 32px);
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 320ms var(--slice-ease), transform 420ms var(--slice-ease);
+}
+.slice.is-open .slice-card {
+  opacity: 1;
+  transform: none;
+  transition-delay: 180ms;
+}
+
+.slice-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.slice-prov {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--pv);
+}
+.slice-city {
+  display: block;
+  font-family: theme("fontFamily.display");
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  font-size: clamp(1.7rem, 3.2vw, 2.8rem);
+  line-height: 1;
+  color: #fff;
+}
+.slice-addr {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: #fff;
+  font-size: clamp(0.9rem, 1.05vw, 1rem);
+  max-width: 44ch;
+}
+/* El CPA: el dato que sólo tiene un domicilio argentino. */
+.slice-cpa {
+  font-family: ui-monospace, "SFMono-Regular", Consolas, monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  color: var(--pv);
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  padding: 2px 7px;
+  white-space: nowrap;
+}
+
+.slice-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 26px;
+  margin-top: 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+  padding-top: 12px;
+}
+.slice-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.slice-fact-k {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+.slice-fact-v {
+  color: #fff;
+  font-size: 0.87rem;
+  line-height: 1.45;
+}
+.slice-fact-v span {
+  display: block;
+}
+.slice-fact-v.is-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.slice-cta {
+  position: absolute;
+  z-index: 3;
+  right: clamp(18px, 2.2vw, 32px);
+  bottom: clamp(18px, 2.2vw, 32px);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #fff;
+  color: rgb(var(--brand-700));
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 999px;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 280ms var(--slice-ease), background 180ms linear,
+    color 180ms linear;
+}
+.slice.is-open .slice-cta {
+  visibility: visible;
+  opacity: 1;
+  transition-delay: 240ms;
+}
+.slice-cta:hover {
+  background: rgb(var(--brand-900));
+  color: #fff;
+}
+.slice-cta:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+.slice-cta svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+/* La misma lógica girada noventa grados: las filas hacen de columnas. */
+@media (max-width: 900px) {
+  .branch-slices {
+    grid-template-columns: 1fr;
+    grid-template-rows: var(--tracks);
+    aspect-ratio: auto;
+    min-height: 0;
+    max-height: none;
+    height: min(84svh, 720px);
+    transition: grid-template-rows var(--slice-speed) var(--slice-ease);
+  }
+  .slice {
+    grid-column: 1;
+    grid-row: var(--r);
+    border-radius: 0 0 0 100% / 0 0 0 24%;
+  }
+  .slice:first-child,
+  .slice.is-open,
+  .slice.is-after {
+    border-radius: 0;
+  }
+
+  .slice-photo {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: auto;
+    width: 100%;
+    height: max(100%, 280px);
+  }
+  .slice-scrim {
+    background: linear-gradient(
+        to right,
+        rgba(38, 4, 16, 0.92) 0%,
+        rgba(38, 4, 16, 0.48) 56%,
+        rgba(38, 4, 16, 0.1) 100%
+      ),
+      linear-gradient(to top, rgba(38, 4, 16, 0.6), rgba(38, 4, 16, 0) 62%);
+  }
+  .slice-rule {
+    height: 3px;
+  }
+
+  .slice-tab {
+    writing-mode: horizontal-tb;
+    top: clamp(10px, 2.4vw, 16px);
+    left: clamp(14px, 4vw, 20px);
+    flex-direction: row-reverse;
+    align-items: baseline;
+    gap: 10px;
+    font-size: 1.05rem;
+    max-height: none;
+  }
+  .slice-tab-prov {
+    writing-mode: horizontal-tb;
+    font-size: 0.58rem;
+  }
+  .slice.is-open .slice-tab {
+    transform: translateY(-6px);
+  }
+
+  /* El corte ahora cruza el borde de abajo: la silueta se va arriba a la
+     derecha. */
+  .slice-crest-mini {
+    left: auto;
+    bottom: auto;
+    top: 9px;
+    right: 14px;
+    width: 36px;
+  }
+  .slice-crest-big {
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    width: clamp(88px, 24vw, 150px);
+  }
+  .slice.is-open .slice-crest-big {
+    opacity: 0.7;
+  }
+
+  .slice-card {
+    padding: clamp(14px, 4vw, 22px);
+    gap: 8px;
+  }
+  .slice-city {
+    font-size: 1.55rem;
+  }
+  .slice-addr {
+    max-width: 26ch;
+  }
+  .slice-facts {
+    gap: 8px 18px;
+    padding-top: 9px;
+  }
+  .slice-cta {
+    right: clamp(14px, 4vw, 22px);
+    bottom: clamp(14px, 4vw, 22px);
+    padding: 8px 13px;
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 460px) {
+  .slice-facts .slice-fact:nth-child(n + 3) {
+    display: none;
+  }
+  .slice-crest-big {
+    display: none;
+  }
+  .slice-cta {
+    padding: 9px;
+    border-radius: 50%;
+  }
+  .slice-cta-label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .branch-slices,
+  .slice,
+  .slice-photo,
+  .slice-wash,
+  .slice-tab,
+  .slice-card,
+  .slice-crest,
+  .slice-cta {
+    transition-duration: 1ms !important;
   }
 }
